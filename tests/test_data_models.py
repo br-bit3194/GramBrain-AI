@@ -3,7 +3,7 @@
 import pytest
 from datetime import datetime
 
-from src.data.models import (
+from backend.src.data.models import (
     User,
     Farm,
     CropCycle,

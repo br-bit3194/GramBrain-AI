@@ -4,8 +4,8 @@ import pytest
 import asyncio
 from datetime import datetime
 
-from src.core import Query, UserContext
-from src.agents import (
+from backend.src.core import Query, UserContext
+from backend.src.agents import (
     WeatherAgent,
     SoilAgent,
     CropAdvisoryAgent,

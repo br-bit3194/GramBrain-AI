@@ -3,8 +3,8 @@
 import pytest
 from datetime import datetime
 
-from src.core import OrchestratorAgent, Query, UserContext, get_registry
-from src.agents import WeatherAgent, SoilAgent
+from backend.src.core import OrchestratorAgent, Query, UserContext, get_registry
+from backend.src.agents import WeatherAgent, SoilAgent
 
 
 @pytest.fixture
@@ -87,7 +87,7 @@ class TestOrchestratorAgent:
     
     def test_collect_data_sources(self, orchestrator):
         """Test data source collection."""
-        from src.core import AgentOutput
+        from backend.src.core import AgentOutput
         
         outputs = [
             AgentOutput(
@@ -117,7 +117,7 @@ class TestOrchestratorAgent:
     
     def test_fallback_synthesis(self, orchestrator):
         """Test fallback synthesis when LLM fails."""
-        from src.core import AgentOutput
+        from backend.src.core import AgentOutput
         
         outputs = [
             AgentOutput(

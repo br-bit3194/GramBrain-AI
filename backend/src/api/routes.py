@@ -1,6 +1,6 @@
 """REST API routes for GramBrain system."""
 
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
@@ -8,6 +8,9 @@ from typing import Optional
 import uuid
 from datetime import datetime
 from pydantic import BaseModel
+
+from ..system import GramBrainSystem
+from ..data.models import User, Farm, Product, Recommendation, UserRole, ProductCategory
 
 
 # Initialize FastAPI app
@@ -25,6 +28,32 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Global system instance
+system: Optional[GramBrainSystem] = None
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize system on startup."""
+    global system
+    system = GramBrainSystem(use_mock_llm=True, use_mock_rag=True)
+    await system.initialize()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown."""
+    global system
+    if system:
+        system.shutdown()
+
+
+def get_system() -> GramBrainSystem:
+    """Get system instance."""
+    if not system:
+        raise HTTPException(status_code=500, detail="System not initialized")
+    return system
 
 
 # Request models
@@ -81,26 +110,14 @@ class AddKnowledgeRequest(BaseModel):
 # ============================================================================
 
 @app.get("/health")
-async def health_check():
+async def health_check(sys: GramBrainSystem = Depends(get_system)):
     """Health check endpoint."""
     return {
         "status": "success",
         "data": {
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
-            "agents": [
-                "crop_advisory",
-                "farmer_interaction",
-                "irrigation",
-                "market",
-                "marketplace",
-                "pest_management",
-                "soil",
-                "sustainability",
-                "village",
-                "weather",
-                "yield",
-            ],
+            "agents": sys.registry.list_agents(),
         },
     }
 
@@ -110,22 +127,22 @@ async def health_check():
 # ============================================================================
 
 @app.post("/api/users")
-async def create_user(request: CreateUserRequest):
+async def create_user(request: CreateUserRequest, sys: GramBrainSystem = Depends(get_system)):
     """Create a new user."""
     try:
         user_id = str(uuid.uuid4())
+        user = User(
+            user_id=user_id,
+            phone_number=request.phone_number,
+            name=request.name,
+            language_preference=request.language_preference,
+            role=UserRole(request.role),
+        )
+        # TODO: Save to database
         return {
             "status": "success",
             "data": {
-                "user": {
-                    "user_id": user_id,
-                    "phone_number": request.phone_number,
-                    "name": request.name,
-                    "language_preference": request.language_preference,
-                    "role": request.role,
-                    "created_at": datetime.now().isoformat(),
-                    "last_active": datetime.now().isoformat(),
-                }
+                "user": user.to_dict()
             },
         }
     except Exception as e:
@@ -159,24 +176,23 @@ async def get_user(user_id: str):
 # ============================================================================
 
 @app.post("/api/farms")
-async def create_farm(request: CreateFarmRequest):
+async def create_farm(request: CreateFarmRequest, sys: GramBrainSystem = Depends(get_system)):
     """Create a new farm."""
     try:
         farm_id = str(uuid.uuid4())
+        farm = Farm(
+            farm_id=farm_id,
+            owner_id=request.owner_id,
+            location={"lat": request.latitude, "lon": request.longitude},
+            area_hectares=request.area_hectares,
+            soil_type=request.soil_type,
+            irrigation_type=request.irrigation_type,
+        )
+        # TODO: Save to database
         return {
             "status": "success",
             "data": {
-                "farm": {
-                    "farm_id": farm_id,
-                    "owner_id": request.owner_id,
-                    "location": {"lat": request.latitude, "lon": request.longitude},
-                    "area_hectares": request.area_hectares,
-                    "soil_type": request.soil_type,
-                    "irrigation_type": request.irrigation_type,
-                    "crops": [],
-                    "created_at": datetime.now().isoformat(),
-                    "updated_at": datetime.now().isoformat(),
-                }
+                "farm": farm.to_dict()
             },
         }
     except Exception as e:
@@ -235,34 +251,40 @@ async def list_user_farms(user_id: str):
 # ============================================================================
 
 @app.post("/api/query")
-async def process_query(request: ProcessQueryRequest):
+async def process_query(request: ProcessQueryRequest, sys: GramBrainSystem = Depends(get_system)):
     """Process a user query and return recommendation."""
     try:
+        result = await sys.process_query(
+            query_text=request.query_text,
+            user_id=request.user_id,
+            farm_id=request.farm_id,
+            farm_location={"lat": request.latitude, "lon": request.longitude} if request.latitude and request.longitude else None,
+            farm_size_hectares=request.farm_size_hectares,
+            crop_type=request.crop_type,
+            growth_stage=request.growth_stage,
+            soil_type=request.soil_type,
+            language=request.language,
+        )
+        
+        # Create recommendation record
         recommendation_id = str(uuid.uuid4())
+        recommendation = Recommendation(
+            recommendation_id=recommendation_id,
+            query_id=result.get("query_id", ""),
+            user_id=request.user_id,
+            farm_id=request.farm_id,
+            timestamp=datetime.now(),
+            recommendation_text=result.get("recommendation", ""),
+            reasoning_chain=result.get("reasoning_chain", []),
+            confidence=result.get("confidence", 0.0),
+            language=request.language,
+        )
+        # TODO: Save to database
+        
         return {
             "status": "success",
             "data": {
-                "recommendation": {
-                    "recommendation_id": recommendation_id,
-                    "query_id": str(uuid.uuid4()),
-                    "user_id": request.user_id,
-                    "farm_id": request.farm_id,
-                    "timestamp": datetime.now().isoformat(),
-                    "recommendation_text": f"Based on your query about {request.crop_type or 'crops'}, here are my recommendations...",
-                    "reasoning_chain": [
-                        "Analyzed crop type and growth stage",
-                        "Checked soil conditions",
-                        "Reviewed weather patterns",
-                        "Generated recommendations",
-                    ],
-                    "confidence": 0.85,
-                    "agent_contributions": [
-                        "crop_advisory",
-                        "weather",
-                        "soil",
-                    ],
-                    "language": request.language,
-                }
+                "recommendation": recommendation.to_dict(),
             },
         }
     except Exception as e:
@@ -310,27 +332,27 @@ async def list_user_recommendations(user_id: str, limit: int = 10):
 # ============================================================================
 
 @app.post("/api/products")
-async def create_product(request: CreateProductRequest):
+async def create_product(request: CreateProductRequest, sys: GramBrainSystem = Depends(get_system)):
     """Create a new product listing."""
     try:
         product_id = str(uuid.uuid4())
+        product = Product(
+            product_id=product_id,
+            farmer_id=request.farmer_id,
+            farm_id=request.farm_id,
+            product_type=ProductCategory(request.product_type),
+            name=request.name,
+            quantity_kg=request.quantity_kg,
+            price_per_kg=request.price_per_kg,
+            harvest_date=datetime.fromisoformat(request.harvest_date),
+        )
+        # TODO: Save to database
+        # TODO: Calculate Pure Product Score
+        
         return {
             "status": "success",
             "data": {
-                "product": {
-                    "product_id": product_id,
-                    "farmer_id": request.farmer_id,
-                    "farm_id": request.farm_id,
-                    "product_type": request.product_type,
-                    "name": request.name,
-                    "quantity_kg": request.quantity_kg,
-                    "price_per_kg": request.price_per_kg,
-                    "harvest_date": request.harvest_date,
-                    "images": [],
-                    "pure_product_score": 0.95,
-                    "status": "available",
-                    "created_at": datetime.now().isoformat(),
-                }
+                "product": product.to_dict()
             },
         }
     except Exception as e:
@@ -396,9 +418,17 @@ async def list_farmer_products(farmer_id: str):
 # ============================================================================
 
 @app.post("/api/knowledge")
-async def add_knowledge(request: AddKnowledgeRequest):
+async def add_knowledge(request: AddKnowledgeRequest, sys: GramBrainSystem = Depends(get_system)):
     """Add knowledge chunk to RAG database."""
     try:
+        await sys.add_knowledge(
+            chunk_id=request.chunk_id,
+            content=request.content,
+            source=request.source,
+            topic=request.topic,
+            crop_type=request.crop_type,
+            region=request.region,
+        )
         return {
             "status": "success",
             "data": {

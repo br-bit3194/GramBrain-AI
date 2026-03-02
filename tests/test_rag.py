@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.rag import InMemoryVectorDB, EmbeddingClient, RAGClient
+from backend.src.rag import InMemoryVectorDB, EmbeddingClient, RAGClient
 
 
 @pytest.fixture
