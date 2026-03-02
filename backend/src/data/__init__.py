@@ -15,6 +15,15 @@ from .models import (
     IrrigationType,
     ProductCategory,
 )
+from .dynamodb_client import DynamoDBClient, RetryConfig
+from .repository import DynamoDBRepository
+from .repositories import (
+    UserRepository,
+    FarmRepository,
+    RecommendationRepository,
+    ProductRepository,
+    KnowledgeRepository,
+)
 
 __all__ = [
     "User",
@@ -30,4 +39,12 @@ __all__ = [
     "GrowthStage",
     "IrrigationType",
     "ProductCategory",
+    "DynamoDBClient",
+    "RetryConfig",
+    "DynamoDBRepository",
+    "UserRepository",
+    "FarmRepository",
+    "RecommendationRepository",
+    "ProductRepository",
+    "KnowledgeRepository",
 ]
