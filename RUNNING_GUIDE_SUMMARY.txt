@@ -1,0 +1,230 @@
+================================================================================
+                    GRAMBRAIN AI - RUNNING GUIDE SUMMARY
+================================================================================
+
+QUICK START (Choose One):
+
+1. DOCKER (Easiest - 1 command):
+   $ docker-compose up
+   Then open: http://localhost:3000
+
+2. MANUAL (5 minutes):
+   Terminal 1:
+   $ cd backend
+   $ python -m venv venv
+   $ source venv/bin/activate
+   $ pip install -r requirements.txt
+   $ python -m uvicorn src.api.routes:app --reload --host 0.0.0.0 --port 8000
+
+   Terminal 2:
+   $ cd frontend
+   $ npm install
+   $ npm run dev
+
+   Then open: http://localhost:3000
+
+================================================================================
+                              WHAT TO TEST
+================================================================================
+
+1. HOME PAGE
+   - Open http://localhost:3000
+   - See landing page with features
+
+2. REGISTER
+   - Click "Get Started"
+   - Fill form with test data
+   - Should redirect to dashboard
+
+3. CREATE FARM
+   - Click "Manage Farms"
+   - Click "Add Farm"
+   - Fill form and submit
+   - Farm should appear in list
+
+4. SUBMIT QUERY
+   - Click "Ask Now"
+   - Enter query: "How should I irrigate my wheat farm?"
+   - Click "Get Recommendation"
+   - Should see response
+
+5. BROWSE MARKETPLACE
+   - Click "Browse Products"
+   - Test search and filter
+
+6. VIEW PROFILE
+   - Click user name in header
+   - See profile information
+
+7. LOGOUT
+   - Click "Logout"
+   - Should redirect to home
+
+8. LOGIN
+   - Go to /login
+   - Enter phone number
+   - Should redirect to dashboard
+
+================================================================================
+                            VERIFY EVERYTHING
+================================================================================
+
+Backend:
+  ✓ Running on http://localhost:8000
+  ✓ Health check: curl http://localhost:8000/health
+  ✓ API Docs: http://localhost:8000/docs
+
+Frontend:
+  ✓ Running on http://localhost:3000
+  ✓ Landing page loads
+  ✓ No console errors (F12)
+
+Integration:
+  ✓ Frontend can reach backend
+  ✓ User registration works
+  ✓ Farm creation works
+  ✓ Query submission works
+  ✓ All pages load
+
+Tests:
+  ✓ Backend: cd backend && pytest tests/ -v
+  ✓ Frontend: cd frontend && npm test
+
+================================================================================
+                          TROUBLESHOOTING
+================================================================================
+
+Port Already In Use:
+  Backend (8000):  lsof -ti:8000 | xargs kill -9
+  Frontend (3000): lsof -ti:3000 | xargs kill -9
+
+Module Not Found:
+  Backend:  pip install -r requirements.txt
+  Frontend: rm -rf node_modules && npm install
+
+Cannot Reach API:
+  1. Check backend is running: curl http://localhost:8000/health
+  2. Check NEXT_PUBLIC_API_URL in frontend/.env.local
+  3. Check browser console for errors
+
+================================================================================
+                          DOCUMENTATION FILES
+================================================================================
+
+START HERE:
+  - START_HERE.md              ← Entry point for new users
+  - HOW_TO_RUN.md              ← This guide (detailed)
+  - QUICK_START_CHECKLIST.md   ← Quick checklist
+  - RUN_END_TO_END.md          ← Step-by-step guide
+
+SETUP & INTEGRATION:
+  - INTEGRATION_GUIDE.md       ← How to integrate frontend/backend
+  - FRONTEND_SETUP.md          ← Frontend development guide
+  - QUICK_REFERENCE.md         ← Quick reference
+
+PROJECT INFO:
+  - PROJECT_STATUS.md          ← Project status
+  - FINAL_COMPLETION_REPORT.md ← Completion report
+  - FRONTEND_COMPLETION_SUMMARY.md ← Frontend summary
+
+================================================================================
+                            QUICK COMMANDS
+================================================================================
+
+Backend:
+  Start:    python -m uvicorn src.api.routes:app --reload --host 0.0.0.0 --port 8000
+  Tests:    pytest tests/ -v
+  Health:   curl http://localhost:8000/health
+  Docs:     http://localhost:8000/docs
+
+Frontend:
+  Start:    npm run dev
+  Build:    npm run build
+  Tests:    npm test
+  Lint:     npm run lint
+
+Docker:
+  Start:    docker-compose up
+  Stop:     docker-compose down
+  Logs:     docker-compose logs -f
+
+================================================================================
+                          URLS TO REMEMBER
+================================================================================
+
+Frontend:           http://localhost:3000
+Backend API:        http://localhost:8000
+API Documentation:  http://localhost:8000/docs
+API ReDoc:          http://localhost:8000/redoc
+
+Pages:
+  Home:       http://localhost:3000/
+  Dashboard:  http://localhost:3000/dashboard
+  Farms:      http://localhost:3000/farms
+  Query:      http://localhost:3000/query
+  Marketplace: http://localhost:3000/marketplace
+  Login:      http://localhost:3000/login
+  Register:   http://localhost:3000/register
+  Profile:    http://localhost:3000/profile
+
+================================================================================
+                          SUCCESS CRITERIA
+================================================================================
+
+All of these should work:
+  ✓ Backend starts without errors
+  ✓ Frontend starts without errors
+  ✓ Can register a user
+  ✓ Can create a farm
+  ✓ Can submit a query
+  ✓ Can browse marketplace
+  ✓ Can view profile
+  ✓ Can logout and login
+  ✓ API documentation accessible
+  ✓ Tests pass (85+ backend, frontend)
+  ✓ No console errors
+  ✓ API calls visible in Network tab
+
+If all above are working → Application is running successfully! 🎉
+
+================================================================================
+                          NEXT STEPS
+================================================================================
+
+1. Explore the code:
+   - Backend: backend/src/
+   - Frontend: frontend/src/
+
+2. Make changes:
+   - Backend auto-reloads with --reload
+   - Frontend hot-reloads automatically
+
+3. Test changes:
+   - Run tests: pytest tests/ or npm test
+   - Check browser console for errors
+
+4. Deploy:
+   - Follow INTEGRATION_GUIDE.md for production setup
+
+================================================================================
+                          NEED HELP?
+================================================================================
+
+1. Check the Troubleshooting section above
+2. Review error messages in logs
+3. Check browser console (F12)
+4. Refer to documentation files
+5. Check QUICK_REFERENCE.md for common tasks
+
+================================================================================
+                    YOU'RE READY TO RUN GRAMBRAIN AI! 🚀
+================================================================================
+
+Choose your path:
+  1. DOCKER:   docker-compose up
+  2. MANUAL:   Follow Quick Start section above
+  3. DETAILED: Read RUN_END_TO_END.md
+
+Happy coding! 🌾🤖
+
+================================================================================
