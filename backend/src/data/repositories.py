@@ -8,6 +8,11 @@ from .models import (
     User, Farm, Recommendation, Product, UserRole,
     IrrigationType, ProductCategory
 )
+from .schemas import (
+    UserSchema, FarmSchema, RecommendationSchema, ProductSchema,
+    KnowledgeChunkSchema, UserCreateSchema, FarmCreateSchema,
+    RecommendationCreateSchema, ProductCreateSchema, KnowledgeChunkCreateSchema
+)
 from .repository import DynamoDBRepository
 from .dynamodb_client import DynamoDBClient
 
@@ -27,7 +32,7 @@ class UserRepository(DynamoDBRepository[User]):
     
     def _to_item(self, entity: User) -> Dict[str, Any]:
         """Convert User to DynamoDB item."""
-        return {
+        item = {
             'user_id': entity.user_id,
             'phone_number': entity.phone_number,
             'name': entity.name,
@@ -37,6 +42,9 @@ class UserRepository(DynamoDBRepository[User]):
             'last_active': entity.last_active.isoformat(),
             'metadata': entity.metadata,
         }
+        if entity.password_hash:
+            item['password_hash'] = entity.password_hash
+        return item
     
     def _from_item(self, item: Dict[str, Any]) -> User:
         """Convert DynamoDB item to User."""
@@ -44,6 +52,7 @@ class UserRepository(DynamoDBRepository[User]):
             user_id=item['user_id'],
             phone_number=item['phone_number'],
             name=item['name'],
+            password_hash=item.get('password_hash'),
             language_preference=item.get('language_preference', 'en'),
             role=UserRole(item.get('role', 'farmer')),
             created_at=datetime.fromisoformat(item['created_at']),
@@ -59,7 +68,23 @@ class UserRepository(DynamoDBRepository[User]):
             
         Returns:
             Created user
+            
+        Raises:
+            ValueError: If user data is invalid
         """
+        # Validate using Pydantic schema
+        user_dict = {
+            'user_id': user.user_id,
+            'phone_number': user.phone_number,
+            'name': user.name,
+            'language_preference': user.language_preference,
+            'role': user.role,
+            'created_at': user.created_at,
+            'last_active': user.last_active,
+            'metadata': user.metadata,
+        }
+        UserSchema(**user_dict)  # Validates and raises ValidationError if invalid
+        
         return await self.put_item(user)
     
     async def get_user(self, user_id: str) -> Optional[User]:

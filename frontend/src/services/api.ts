@@ -1,16 +1,123 @@
-import axios, { AxiosInstance } from 'axios'
+import axios, { AxiosInstance, AxiosError } from 'axios'
 import { ApiResponse, QueryRequest, Recommendation, Farm, User, Product } from '@/types'
+import { handleApiError, type UserFriendlyError } from '@/utils/errorHandler'
+
+// Function to get token from store
+// This is defined outside the class to avoid circular dependencies
+let getAccessToken: (() => string | null) | null = null
+let clearAuthStore: (() => void) | null = null
+
+export function setTokenGetter(getter: () => string | null) {
+  getAccessToken = getter
+}
+
+export function setClearAuthStore(clearer: () => void) {
+  clearAuthStore = clearer
+}
 
 class ApiClient {
   private client: AxiosInstance
 
   constructor() {
+    // Base URL should already include /api prefix from environment variable
+    const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+    
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL,
+      baseURL,
       headers: {
         'Content-Type': 'application/json',
       },
+      timeout: 30000, // 30 second timeout
     })
+
+    // Request interceptor for authentication header injection
+    this.client.interceptors.request.use(
+      (config) => {
+        // Try to get token from store
+        const token = getAccessToken ? getAccessToken() : null
+        
+        // If token exists, add Authorization header
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
+        
+        // Log the request
+        console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
+          params: config.params,
+          data: config.data,
+          hasAuthHeader: !!config.headers.Authorization,
+        })
+        
+        return config
+      },
+      (error) => {
+        console.error('[API Request Error]', error)
+        return Promise.reject(error)
+      }
+    )
+
+    // Response interceptor for error handling
+    this.client.interceptors.response.use(
+      (response) => {
+        console.log(`[API Response] ${response.config.method?.toUpperCase()} ${response.config.url}`, {
+          status: response.status,
+          data: response.data,
+        })
+        return response
+      },
+      (error: AxiosError) => {
+        // Log the error for debugging
+        if (error.response) {
+          console.error(`[API Error Response] ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
+            status: error.response.status,
+            data: error.response.data,
+          })
+          
+          // Handle 401 Unauthorized - clear auth and redirect to login
+          if (error.response.status === 401 && clearAuthStore) {
+            console.log('[API] Unauthorized - clearing auth store')
+            clearAuthStore()
+          }
+        } else if (error.request) {
+          console.error('[API Network Error]', {
+            message: error.message,
+            url: error.config?.url,
+          })
+        } else {
+          console.error('[API Error]', error.message)
+        }
+        
+        // Transform error to user-friendly format and attach to error object
+        (error as any).userFriendlyError = handleApiError(error)
+        
+        return Promise.reject(error)
+      }
+    )
+  }
+
+  // Auth endpoints
+  async register(data: {
+    phone_number: string
+    name: string
+    password: string
+    language_preference?: string
+    role?: string
+  }): Promise<ApiResponse<{ user: User; access_token: string; refresh_token: string; token_type: string }>> {
+    const response = await this.client.post('/auth/register', data)
+    return response.data
+  }
+
+  async login(data: {
+    phone_number: string
+    password: string
+  }): Promise<ApiResponse<{ user: User; access_token: string; refresh_token: string; token_type: string }>> {
+    const response = await this.client.post('/auth/login', data)
+    return response.data
+  }
+
+  async getCurrentUser(): Promise<ApiResponse<{ user: User }>> {
+    const response = await this.client.get('/auth/me')
+    return response.data
   }
 
   // User endpoints
@@ -112,20 +219,43 @@ class ApiClient {
     topic: string
     crop_type?: string
     region?: string
-  }): Promise<ApiResponse<{ message: string }>> {
+  }): Promise<ApiResponse<{ message: string; chunk_id: string }>> {
     const response = await this.client.post('/knowledge', data)
     return response.data
   }
 
-  async searchKnowledge(query: string, topK: number = 5): Promise<ApiResponse<{ results: any[] }>> {
+  async searchKnowledge(
+    query: string, 
+    topK: number = 5,
+    filters?: {
+      crop_type?: string
+      region?: string
+    }
+  ): Promise<ApiResponse<{ results: any[]; count: number }>> {
     const response = await this.client.get('/knowledge/search', {
-      params: { query, top_k: topK },
+      params: { 
+        query, 
+        top_k: topK,
+        ...filters
+      },
     })
     return response.data
   }
 
+  async addBulkKnowledge(knowledgeItems: Array<{
+    chunk_id: string
+    content: string
+    source: string
+    topic: string
+    crop_type?: string
+    region?: string
+  }>): Promise<ApiResponse<{ added: number; errors: any[]; total: number }>> {
+    const response = await this.client.post('/knowledge/bulk', knowledgeItems)
+    return response.data
+  }
+
   // Health check
-  async healthCheck(): Promise<ApiResponse<{ status: string; agents: string[] }>> {
+  async healthCheck(): Promise<ApiResponse<{ status: string; timestamp: string; agents: string[] }>> {
     const response = await this.client.get('/health')
     return response.data
   }

@@ -1,6 +1,7 @@
 """GramBrain System - Main entry point for the multi-agent platform."""
 
 import asyncio
+import os
 from typing import Optional
 from .core import OrchestratorAgent, Query, UserContext, get_registry
 from .agents import (
@@ -18,6 +19,7 @@ from .agents import (
 )
 from .llm import BedrockClient
 from .rag import RAGClient, InMemoryVectorDB, EmbeddingClient
+from .data import DynamoDBClient, UserRepository, FarmRepository, RecommendationRepository, ProductRepository
 
 
 class GramBrainSystem:
@@ -46,6 +48,15 @@ class GramBrainSystem:
         self.llm_client = None
         self.rag_client = None
         self.orchestrator = None
+        
+        # Initialize DynamoDB repositories
+        env = os.getenv("DYNAMODB_ENV", "dev")
+        endpoint_url = os.getenv("DYNAMODB_ENDPOINT_URL")
+        self.dynamodb_client = DynamoDBClient(region_name=aws_region, endpoint_url=endpoint_url)
+        self.user_repo = UserRepository(self.dynamodb_client, env=env)
+        self.farm_repo = FarmRepository(self.dynamodb_client, env=env)
+        self.recommendation_repo = RecommendationRepository(self.dynamodb_client, env=env)
+        self.product_repo = ProductRepository(self.dynamodb_client, env=env)
     
     async def initialize(self) -> None:
         """Initialize all system components."""
@@ -58,6 +69,10 @@ class GramBrainSystem:
             vector_db = InMemoryVectorDB()
             embedding_client = EmbeddingClient(region=self.aws_region)
             self.rag_client = RAGClient(vector_db, embedding_client)
+        else:
+            # Use OpenSearch for production
+            from .rag import create_rag_client
+            self.rag_client = await create_rag_client()
         
         # Register agents
         self._register_agents()
@@ -68,6 +83,9 @@ class GramBrainSystem:
             self.orchestrator.set_llm_client(self.llm_client)
         if self.rag_client:
             self.orchestrator.set_rag_client(self.rag_client)
+        
+        # Initialize orchestrator (pre-instantiate common agents)
+        await self.orchestrator.initialize()
     
     def _register_agents(self) -> None:
         """Register all specialized agents."""
@@ -199,6 +217,11 @@ class GramBrainSystem:
     
     def shutdown(self) -> None:
         """Shutdown system and cleanup resources."""
+        # Shutdown orchestrator
+        if self.orchestrator:
+            asyncio.run(self.orchestrator.shutdown())
+        
+        # Shutdown registry
         self.registry.shutdown_all()
 
 

@@ -50,15 +50,20 @@ class User:
     user_id: str
     phone_number: str
     name: str
+    password_hash: Optional[str] = None  # Hashed password, not returned in API
     language_preference: str = "en"
     role: UserRole = UserRole.FARMER
     created_at: datetime = field(default_factory=datetime.now)
     last_active: datetime = field(default_factory=datetime.now)
     metadata: Dict[str, Any] = field(default_factory=dict)
     
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary."""
-        return {
+    def to_dict(self, include_password: bool = False) -> Dict[str, Any]:
+        """Convert to dictionary.
+        
+        Args:
+            include_password: Whether to include password_hash (for internal use only)
+        """
+        data = {
             "user_id": self.user_id,
             "phone_number": self.phone_number,
             "name": self.name,
@@ -68,6 +73,9 @@ class User:
             "last_active": self.last_active.isoformat(),
             "metadata": self.metadata,
         }
+        if include_password and self.password_hash:
+            data["password_hash"] = self.password_hash
+        return data
 
 
 @dataclass

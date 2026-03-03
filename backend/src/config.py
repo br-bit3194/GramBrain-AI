@@ -63,11 +63,34 @@ class LLMConfig:
 
 
 @dataclass
+class S3Config:
+    """S3 configuration."""
+    bucket_name: str
+    max_file_size_mb: int
+    presigned_url_expiration: int
+    
+    @classmethod
+    def from_env(cls) -> 'S3Config':
+        """Load S3 config from environment variables."""
+        return cls(
+            bucket_name=os.getenv('S3_BUCKET_NAME', 'gram-brain-bucket'),
+            max_file_size_mb=int(os.getenv('S3_MAX_FILE_SIZE_MB', '50')),
+            presigned_url_expiration=int(os.getenv('S3_PRESIGNED_URL_EXPIRATION', '3600')),
+        )
+
+
+@dataclass
 class RAGConfig:
     """RAG configuration."""
     vector_db_type: str
     opensearch_endpoint: Optional[str]
+    opensearch_index_name: str
+    opensearch_use_ssl: bool
+    opensearch_verify_certs: bool
+    opensearch_timeout: int
     embedding_model: str
+    embedding_dimension: int
+    cache_ttl_hours: int
     
     @classmethod
     def from_env(cls) -> 'RAGConfig':
@@ -75,7 +98,13 @@ class RAGConfig:
         return cls(
             vector_db_type=os.getenv('VECTOR_DB_TYPE', 'in_memory'),
             opensearch_endpoint=os.getenv('OPENSEARCH_ENDPOINT'),
+            opensearch_index_name=os.getenv('OPENSEARCH_INDEX_NAME', 'grambrain-knowledge'),
+            opensearch_use_ssl=os.getenv('OPENSEARCH_USE_SSL', 'true').lower() == 'true',
+            opensearch_verify_certs=os.getenv('OPENSEARCH_VERIFY_CERTS', 'true').lower() == 'true',
+            opensearch_timeout=int(os.getenv('OPENSEARCH_TIMEOUT', '30')),
             embedding_model=os.getenv('EMBEDDING_MODEL', 'amazon.titan-embed-text-v1'),
+            embedding_dimension=int(os.getenv('EMBEDDING_DIMENSION', '1536')),
+            cache_ttl_hours=int(os.getenv('RAG_CACHE_TTL_HOURS', '24')),
         )
 
 
@@ -95,13 +124,38 @@ class SystemConfig:
 
 
 @dataclass
+class ExternalAPIConfig:
+    """External API configuration."""
+    openweather_api_key: Optional[str]
+    imd_api_key: Optional[str]
+    sentinel_api_key: Optional[str]
+    agmarknet_api_key: Optional[str]
+    weather_cache_ttl_hours: int
+    satellite_cache_ttl_hours: int
+    
+    @classmethod
+    def from_env(cls) -> 'ExternalAPIConfig':
+        """Load external API config from environment variables."""
+        return cls(
+            openweather_api_key=os.getenv('OPENWEATHER_API_KEY'),
+            imd_api_key=os.getenv('IMD_API_KEY'),
+            sentinel_api_key=os.getenv('SENTINEL_API_KEY'),
+            agmarknet_api_key=os.getenv('AGMARKNET_API_KEY'),
+            weather_cache_ttl_hours=int(os.getenv('WEATHER_CACHE_TTL_HOURS', '3')),
+            satellite_cache_ttl_hours=int(os.getenv('SATELLITE_CACHE_TTL_HOURS', '24')),
+        )
+
+
+@dataclass
 class Config:
     """Application configuration."""
     aws: AWSConfig
     dynamodb: DynamoDBConfig
     llm: LLMConfig
+    s3: S3Config
     rag: RAGConfig
     system: SystemConfig
+    external_api: ExternalAPIConfig
     
     @classmethod
     def from_env(cls) -> 'Config':
@@ -110,8 +164,10 @@ class Config:
             aws=AWSConfig.from_env(),
             dynamodb=DynamoDBConfig.from_env(),
             llm=LLMConfig.from_env(),
+            s3=S3Config.from_env(),
             rag=RAGConfig.from_env(),
             system=SystemConfig.from_env(),
+            external_api=ExternalAPIConfig.from_env(),
         )
 
 

@@ -42,7 +42,8 @@ class AgentRegistry:
             raise ValueError(f"Agent '{agent_name}' not registered")
         
         agent_class = self._agent_classes[agent_name]
-        agent = agent_class(agent_name)
+        # Agents initialize themselves with their own name
+        agent = agent_class()
         self._agents[agent_name] = agent
         return agent
     

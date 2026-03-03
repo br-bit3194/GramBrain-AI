@@ -133,11 +133,18 @@ class Agent(ABC):
         if not self.llm_client:
             raise RuntimeError(f"LLM client not configured for {self.agent_name}")
         
-        return await self.llm_client.invoke(
+        response = await self.llm_client.invoke(
             prompt=prompt,
             temperature=temperature,
             max_tokens=max_tokens
         )
+        
+        # Handle both old string responses and new BedrockResponse objects
+        if isinstance(response, str):
+            return response
+        else:
+            # BedrockResponse object
+            return response.text
     
     def _create_output(
         self,

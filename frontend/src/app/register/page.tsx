@@ -3,18 +3,19 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAppStore } from '@/store/appStore'
-import { apiClient } from '@/services/api'
-import { FiUser, FiPhone, FiGlobe, FiAlertCircle } from 'react-icons/fi'
+import { useAuth } from '@/hooks/useAuth'
+import { FiUser, FiPhone, FiGlobe, FiAlertCircle, FiLock } from 'react-icons/fi'
 
 type UserRole = 'farmer' | 'village_leader' | 'policymaker' | 'consumer'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { setUser } = useAppStore()
+  const { register } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
+    password: '',
+    confirmPassword: '',
     language: 'en',
     role: 'farmer' as UserRole,
   })
@@ -35,24 +36,36 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      if (!formData.name.trim() || !formData.phoneNumber.trim()) {
-        setError('Name and phone number are required')
+      if (!formData.name.trim() || !formData.phoneNumber.trim() || !formData.password.trim()) {
+        setError('All fields are required')
         setLoading(false)
         return
       }
 
-      const response = await apiClient.createUser({
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match')
+        setLoading(false)
+        return
+      }
+
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters')
+        setLoading(false)
+        return
+      }
+
+      const result = await register({
         name: formData.name,
         phone_number: formData.phoneNumber,
+        password: formData.password,
         language_preference: formData.language,
         role: formData.role,
       })
 
-      if (response.status === 'success' && response.data?.user) {
-        setUser(response.data.user)
+      if (result.success) {
         router.push('/dashboard')
       } else {
-        setError('Registration failed. Please try again.')
+        setError(result.error || 'Registration failed. Please try again.')
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Registration failed. Please try again.')
@@ -108,6 +121,44 @@ export default function RegisterPage() {
                   value={formData.phoneNumber}
                   onChange={handleChange}
                   placeholder="+91 98765 43210"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <FiLock className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  id="password"
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter password"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <FiLock className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm password"
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                   disabled={loading}
                 />

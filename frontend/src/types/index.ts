@@ -96,7 +96,14 @@ export interface QueryRequest {
 export interface AppStore {
   user: User | null
   farm: Farm | null
+  accessToken: string | null
+  refreshToken: string | null
   setUser: (user: User | null) => void
   setFarm: (farm: Farm | null) => void
+  setTokens: (accessToken: string, refreshToken: string) => void
   clearStore: () => void
+  logout: () => void
 }
+
+// Export error types
+export * from './errors'

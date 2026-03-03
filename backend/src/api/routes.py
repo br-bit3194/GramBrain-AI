@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from ..system import GramBrainSystem
 from ..data.models import User, Farm, Product, Recommendation, UserRole, ProductCategory
+from ..auth import AuthService, get_current_user, require_permission, require_role, Permission, Role
 
 
 # Initialize FastAPI app
@@ -31,6 +32,7 @@ app.add_middleware(
 
 # Global system instance
 system: Optional[GramBrainSystem] = None
+auth_service = AuthService()
 
 
 @app.on_event("startup")
@@ -123,10 +125,135 @@ async def health_check(sys: GramBrainSystem = Depends(get_system)):
 
 
 # ============================================================================
+# Authentication Endpoints
+# ============================================================================
+
+class RegisterRequest(BaseModel):
+    phone_number: str
+    name: str
+    password: str
+    language_preference: str = "en"
+    role: str = "farmer"
+
+
+class LoginRequest(BaseModel):
+    phone_number: str
+    password: str
+
+
+@app.post("/auth/register")
+async def register(request: RegisterRequest, sys: GramBrainSystem = Depends(get_system)):
+    """Register a new user."""
+    try:
+        # Check if user already exists
+        existing_user = await sys.user_repo.get_user_by_phone(request.phone_number)
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Phone number already registered")
+        
+        # Hash password
+        hashed_password = auth_service.hash_password(request.password)
+        
+        # Create user
+        user_id = str(uuid.uuid4())
+        user = User(
+            user_id=user_id,
+            phone_number=request.phone_number,
+            name=request.name,
+            password_hash=hashed_password,
+            language_preference=request.language_preference,
+            role=UserRole(request.role),
+        )
+        
+        # Save user to database
+        await sys.user_repo.create_user(user)
+        
+        # Generate tokens
+        access_token = auth_service.create_access_token(user_id, request.role)
+        refresh_token = auth_service.create_refresh_token(user_id)
+        
+        return {
+            "status": "success",
+            "data": {
+                "user": user.to_dict(),  # Don't include password
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "token_type": "bearer"
+            },
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/auth/login")
+async def login(request: LoginRequest, sys: GramBrainSystem = Depends(get_system)):
+    """Login user."""
+    try:
+        # Get user from database by phone_number
+        user = await sys.user_repo.get_user_by_phone(request.phone_number)
+        
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid phone number or password")
+        
+        # Verify password
+        if not user.password_hash or not auth_service.verify_password(request.password, user.password_hash):
+            raise HTTPException(status_code=401, detail="Invalid phone number or password")
+        
+        # Update last active
+        await sys.user_repo.update_user(user.user_id, {
+            'last_active': datetime.now().isoformat()
+        })
+        
+        # Generate tokens
+        access_token = auth_service.create_access_token(user.user_id, user.role.value)
+        refresh_token = auth_service.create_refresh_token(user.user_id)
+        
+        return {
+            "status": "success",
+            "data": {
+                "user": user.to_dict(),  # Don't include password
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "token_type": "bearer"
+            },
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Login failed")
+
+
+@app.get("/auth/me")
+async def get_current_user_info(
+    current_user: dict = Depends(get_current_user),
+    sys: GramBrainSystem = Depends(get_system)
+):
+    """Get current user info."""
+    try:
+        # Get full user data from database
+        user = await sys.user_repo.get_user(current_user.get("user_id"))
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {
+            "status": "success",
+            "data": {
+                "user": user.to_dict()  # Don't include password
+            },
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to get user info")
+
+
+# ============================================================================
 # User Endpoints
 # ============================================================================
 
-@app.post("/api/users")
+@app.post("/users")
 async def create_user(request: CreateUserRequest, sys: GramBrainSystem = Depends(get_system)):
     """Create a new user."""
     try:
@@ -152,7 +279,7 @@ async def create_user(request: CreateUserRequest, sys: GramBrainSystem = Depends
         }
 
 
-@app.get("/api/users/{user_id}")
+@app.get("/users/{user_id}")
 async def get_user(user_id: str):
     """Get user by ID."""
     return {
@@ -175,7 +302,7 @@ async def get_user(user_id: str):
 # Farm Endpoints
 # ============================================================================
 
-@app.post("/api/farms")
+@app.post("/farms")
 async def create_farm(request: CreateFarmRequest, sys: GramBrainSystem = Depends(get_system)):
     """Create a new farm."""
     try:
@@ -202,7 +329,7 @@ async def create_farm(request: CreateFarmRequest, sys: GramBrainSystem = Depends
         }
 
 
-@app.get("/api/farms/{farm_id}")
+@app.get("/farms/{farm_id}")
 async def get_farm(farm_id: str):
     """Get farm by ID."""
     return {
@@ -223,7 +350,7 @@ async def get_farm(farm_id: str):
     }
 
 
-@app.get("/api/users/{user_id}/farms")
+@app.get("/users/{user_id}/farms")
 async def list_user_farms(user_id: str):
     """List all farms for a user."""
     return {
@@ -250,7 +377,7 @@ async def list_user_farms(user_id: str):
 # Query/Recommendation Endpoints
 # ============================================================================
 
-@app.post("/api/query")
+@app.post("/query")
 async def process_query(request: ProcessQueryRequest, sys: GramBrainSystem = Depends(get_system)):
     """Process a user query and return recommendation."""
     try:
@@ -294,7 +421,7 @@ async def process_query(request: ProcessQueryRequest, sys: GramBrainSystem = Dep
         }
 
 
-@app.get("/api/recommendations/{recommendation_id}")
+@app.get("/recommendations/{recommendation_id}")
 async def get_recommendation(recommendation_id: str):
     """Get recommendation by ID."""
     return {
@@ -316,7 +443,7 @@ async def get_recommendation(recommendation_id: str):
     }
 
 
-@app.get("/api/users/{user_id}/recommendations")
+@app.get("/users/{user_id}/recommendations")
 async def list_user_recommendations(user_id: str, limit: int = 10):
     """List recommendations for a user."""
     return {
@@ -331,7 +458,7 @@ async def list_user_recommendations(user_id: str, limit: int = 10):
 # Product/Marketplace Endpoints
 # ============================================================================
 
-@app.post("/api/products")
+@app.post("/products")
 async def create_product(request: CreateProductRequest, sys: GramBrainSystem = Depends(get_system)):
     """Create a new product listing."""
     try:
@@ -362,7 +489,7 @@ async def create_product(request: CreateProductRequest, sys: GramBrainSystem = D
         }
 
 
-@app.get("/api/products/{product_id}")
+@app.get("/products/{product_id}")
 async def get_product(product_id: str):
     """Get product by ID."""
     return {
@@ -386,7 +513,7 @@ async def get_product(product_id: str):
     }
 
 
-@app.get("/api/products")
+@app.get("/products")
 async def search_products(
     product_type: Optional[str] = None,
     min_score: float = 0,
@@ -402,7 +529,7 @@ async def search_products(
     }
 
 
-@app.get("/api/farmers/{farmer_id}/products")
+@app.get("/farmers/{farmer_id}/products")
 async def list_farmer_products(farmer_id: str):
     """List all products from a farmer."""
     return {
@@ -417,7 +544,7 @@ async def list_farmer_products(farmer_id: str):
 # Knowledge/RAG Endpoints
 # ============================================================================
 
-@app.post("/api/knowledge")
+@app.post("/knowledge")
 async def add_knowledge(request: AddKnowledgeRequest, sys: GramBrainSystem = Depends(get_system)):
     """Add knowledge chunk to RAG database."""
     try:
@@ -432,7 +559,8 @@ async def add_knowledge(request: AddKnowledgeRequest, sys: GramBrainSystem = Dep
         return {
             "status": "success",
             "data": {
-                "message": "Knowledge added successfully"
+                "message": "Knowledge added successfully",
+                "chunk_id": request.chunk_id
             },
         }
     except Exception as e:
@@ -442,15 +570,81 @@ async def add_knowledge(request: AddKnowledgeRequest, sys: GramBrainSystem = Dep
         }
 
 
-@app.get("/api/knowledge/search")
-async def search_knowledge(query: str, top_k: int = 5):
+@app.get("/knowledge/search")
+async def search_knowledge(
+    query: str,
+    top_k: int = 5,
+    crop_type: Optional[str] = None,
+    region: Optional[str] = None,
+    sys: GramBrainSystem = Depends(get_system)
+):
     """Search knowledge base."""
-    return {
-        "status": "success",
-        "data": {
-            "results": []
-        },
-    }
+    try:
+        # Build filters
+        filters = {}
+        if crop_type:
+            filters["crop_type"] = crop_type
+        if region:
+            filters["region"] = region
+        
+        # Search using RAG client
+        results = await sys.rag_client.search(
+            query_text=query,
+            top_k=top_k,
+            filters=filters
+        )
+        
+        return {
+            "status": "success",
+            "data": {
+                "results": results,
+                "count": len(results)
+            },
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "detail": str(e)
+        }
+
+
+@app.post("/knowledge/bulk")
+async def add_bulk_knowledge(
+    knowledge_items: list[AddKnowledgeRequest],
+    sys: GramBrainSystem = Depends(get_system)
+):
+    """Add multiple knowledge chunks at once."""
+    try:
+        added = 0
+        errors = []
+        
+        for item in knowledge_items:
+            try:
+                await sys.add_knowledge(
+                    chunk_id=item.chunk_id,
+                    content=item.content,
+                    source=item.source,
+                    topic=item.topic,
+                    crop_type=item.crop_type,
+                    region=item.region,
+                )
+                added += 1
+            except Exception as e:
+                errors.append({"chunk_id": item.chunk_id, "error": str(e)})
+        
+        return {
+            "status": "success",
+            "data": {
+                "added": added,
+                "errors": errors,
+                "total": len(knowledge_items)
+            },
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "detail": str(e)
+        }
 
 
 # ============================================================================

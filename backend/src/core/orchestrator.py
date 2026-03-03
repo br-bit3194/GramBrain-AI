@@ -1,10 +1,82 @@
 """Orchestrator Agent - Master coordinator for all specialized agents."""
 
 import asyncio
-from typing import Dict, List, Optional
+import json
+import time
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 from .agent_base import Agent, AgentOutput, Query, UserContext
 from .agent_registry import get_registry
+
+
+class AgentExecutionMetrics:
+    """Metrics for agent execution tracking."""
+    
+    def __init__(self):
+        """Initialize metrics storage."""
+        self.executions: Dict[str, List[Dict[str, Any]]] = {}
+        self.total_executions = 0
+        self.total_failures = 0
+        self.total_timeouts = 0
+    
+    def record_execution(
+        self,
+        agent_name: str,
+        duration_ms: float,
+        success: bool,
+        timeout: bool = False,
+        error: Optional[str] = None
+    ) -> None:
+        """Record an agent execution."""
+        if agent_name not in self.executions:
+            self.executions[agent_name] = []
+        
+        self.executions[agent_name].append({
+            "timestamp": datetime.now().isoformat(),
+            "duration_ms": duration_ms,
+            "success": success,
+            "timeout": timeout,
+            "error": error,
+        })
+        
+        self.total_executions += 1
+        if not success:
+            self.total_failures += 1
+        if timeout:
+            self.total_timeouts += 1
+    
+    def get_agent_stats(self, agent_name: str) -> Dict[str, Any]:
+        """Get statistics for a specific agent."""
+        if agent_name not in self.executions:
+            return {
+                "total_executions": 0,
+                "success_rate": 0.0,
+                "avg_duration_ms": 0.0,
+                "timeout_rate": 0.0,
+            }
+        
+        executions = self.executions[agent_name]
+        total = len(executions)
+        successes = sum(1 for e in executions if e["success"])
+        timeouts = sum(1 for e in executions if e["timeout"])
+        durations = [e["duration_ms"] for e in executions]
+        
+        return {
+            "total_executions": total,
+            "success_rate": successes / total if total > 0 else 0.0,
+            "avg_duration_ms": sum(durations) / len(durations) if durations else 0.0,
+            "timeout_rate": timeouts / total if total > 0 else 0.0,
+        }
+    
+    def get_overall_stats(self) -> Dict[str, Any]:
+        """Get overall statistics."""
+        return {
+            "total_executions": self.total_executions,
+            "total_failures": self.total_failures,
+            "total_timeouts": self.total_timeouts,
+            "failure_rate": self.total_failures / self.total_executions if self.total_executions > 0 else 0.0,
+            "timeout_rate": self.total_timeouts / self.total_executions if self.total_executions > 0 else 0.0,
+        }
 
 
 class OrchestratorAgent(Agent):
@@ -15,6 +87,94 @@ class OrchestratorAgent(Agent):
         super().__init__("orchestrator")
         self.registry = get_registry()
         self.agent_timeout = 10  # seconds
+        self.metrics = AgentExecutionMetrics()
+        self._initialized = False
+        self._active_agents: Dict[str, Agent] = {}
+    
+    async def initialize(self) -> None:
+        """Initialize orchestrator and prepare agents."""
+        if self._initialized:
+            return
+        
+        # Pre-instantiate commonly used agents for faster response
+        common_agents = ["weather_agent", "soil_agent", "crop_advisory_agent"]
+        for agent_name in common_agents:
+            try:
+                if agent_name in self.registry.list_agents():
+                    agent = self.registry.instantiate_agent(agent_name)
+                    # Inject dependencies if available
+                    if self.llm_client:
+                        agent.set_llm_client(self.llm_client)
+                    if self.rag_client:
+                        agent.set_rag_client(self.rag_client)
+                    if self.data_client:
+                        agent.set_data_client(self.data_client)
+                    self._active_agents[agent_name] = agent
+            except Exception as e:
+                # Log but don't fail initialization
+                pass
+        
+        self._initialized = True
+    
+    async def shutdown(self) -> None:
+        """Shutdown orchestrator and cleanup agents."""
+        self._active_agents.clear()
+        self.registry.shutdown_all()
+        self._initialized = False
+    
+    def get_metrics(self) -> Dict:
+        """Get execution metrics."""
+        return {
+            "overall": self.metrics.get_overall_stats(),
+            "by_agent": {
+                agent_name: self.metrics.get_agent_stats(agent_name)
+                for agent_name in self.registry.list_agents()
+            }
+        }
+    
+    def _validate_agent_output(self, output: Any, agent_name: str) -> bool:
+        """
+        Validate agent output for proper serialization.
+        
+        Args:
+            output: Agent output to validate
+            agent_name: Name of the agent that produced the output
+            
+        Returns:
+            True if valid, False otherwise
+        """
+        if not isinstance(output, AgentOutput):
+            return False
+        
+        try:
+            # Test serialization
+            serialized = output.to_dict()
+            
+            # Validate required fields
+            required_fields = [
+                "agent_name", "query_id", "timestamp", "analysis",
+                "recommendation", "confidence"
+            ]
+            for field in required_fields:
+                if field not in serialized:
+                    return False
+            
+            # Validate types
+            if not isinstance(serialized["analysis"], dict):
+                return False
+            if not isinstance(serialized["recommendation"], str):
+                return False
+            if not isinstance(serialized["confidence"], (int, float)):
+                return False
+            if not (0 <= serialized["confidence"] <= 1):
+                return False
+            
+            # Test JSON serialization
+            json.dumps(serialized)
+            
+            return True
+        except Exception:
+            return False
     
     async def analyze(self, query: Query, context: UserContext) -> AgentOutput:
         """
@@ -86,7 +246,7 @@ class OrchestratorAgent(Agent):
         context: UserContext,
     ) -> List[AgentOutput]:
         """
-        Dispatch query to multiple agents in parallel.
+        Dispatch query to multiple agents in parallel with error handling.
         
         Args:
             agent_names: List of agent names to invoke
@@ -94,39 +254,114 @@ class OrchestratorAgent(Agent):
             context: User context
             
         Returns:
-            List of agent outputs
+            List of agent outputs (only successful ones)
         """
         tasks = []
+        task_agent_map = {}
         
         for agent_name in agent_names:
-            agent = self.registry.get_agent(agent_name)
+            # Get or instantiate agent
+            agent = self._active_agents.get(agent_name)
             if not agent:
-                # Try to instantiate if not already active
-                try:
-                    agent = self.registry.instantiate_agent(agent_name)
-                except ValueError:
-                    continue
+                agent = self.registry.get_agent(agent_name)
+                if not agent:
+                    # Try to instantiate if not already active
+                    try:
+                        agent = self.registry.instantiate_agent(agent_name)
+                        # Inject dependencies
+                        if self.llm_client:
+                            agent.set_llm_client(self.llm_client)
+                        if self.rag_client:
+                            agent.set_rag_client(self.rag_client)
+                        if self.data_client:
+                            agent.set_data_client(self.data_client)
+                        self._active_agents[agent_name] = agent
+                    except ValueError:
+                        # Agent class not registered
+                        self.metrics.record_execution(
+                            agent_name, 0, False, False, "Agent not registered"
+                        )
+                        continue
             
-            # Create task with timeout
-            task = asyncio.wait_for(
-                agent.analyze(query, context),
-                timeout=self.agent_timeout
-            )
+            # Create task with timeout and error handling
+            task = self._execute_agent_with_validation(agent, query, context)
             tasks.append(task)
+            task_agent_map[id(task)] = agent_name
         
         # Execute all tasks in parallel
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
-        # Filter out exceptions and return valid outputs
+        # Filter valid outputs
         outputs = []
         for result in results:
             if isinstance(result, AgentOutput):
                 outputs.append(result)
-            elif isinstance(result, Exception):
-                # Log error but continue
-                pass
+            # Exceptions already logged in _execute_agent_with_validation
         
         return outputs
+    
+    async def _execute_agent_with_validation(
+        self,
+        agent: Agent,
+        query: Query,
+        context: UserContext
+    ) -> AgentOutput:
+        """
+        Execute agent with timeout, error handling, validation, and metrics tracking.
+        
+        Args:
+            agent: Agent to execute
+            query: User query
+            context: User context
+            
+        Returns:
+            Agent output (only if valid)
+            
+        Raises:
+            Exception: If agent execution fails or output is invalid
+        """
+        agent_name = agent.agent_name
+        start_time = time.time()
+        
+        try:
+            # Execute with timeout
+            output = await asyncio.wait_for(
+                agent.analyze(query, context),
+                timeout=self.agent_timeout
+            )
+            
+            # Validate output
+            if not self._validate_agent_output(output, agent_name):
+                # Record validation failure
+                duration_ms = (time.time() - start_time) * 1000
+                self.metrics.record_execution(
+                    agent_name, duration_ms, False, False, "Invalid output format"
+                )
+                raise ValueError(f"Invalid output from {agent_name}")
+            
+            # Record success
+            duration_ms = (time.time() - start_time) * 1000
+            self.metrics.record_execution(agent_name, duration_ms, True, False)
+            
+            return output
+            
+        except asyncio.TimeoutError:
+            # Record timeout
+            duration_ms = (time.time() - start_time) * 1000
+            self.metrics.record_execution(
+                agent_name, duration_ms, False, True, "Timeout"
+            )
+            raise
+            
+        except Exception as e:
+            # Record failure (if not already recorded)
+            duration_ms = (time.time() - start_time) * 1000
+            if not isinstance(e, ValueError) or "Invalid output" not in str(e):
+                error_msg = f"{type(e).__name__}: {str(e)}"
+                self.metrics.record_execution(
+                    agent_name, duration_ms, False, False, error_msg
+                )
+            raise
     
     async def _synthesize_with_llm(
         self,

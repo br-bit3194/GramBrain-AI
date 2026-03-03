@@ -274,5 +274,261 @@ class TestDynamoDBRetryBehavior:
                 f"Delay {delay} should be between {min_expected} and {max_expected}"
 
 
+class TestDynamoDBPagination:
+    """Test Property 43: DynamoDB pagination.
+    
+    Feature: production-readiness, Property 43: DynamoDB pagination
+    Validates: Requirements 14.2
+    
+    For any list operation on DynamoDB, the system should implement pagination 
+    with limit and LastEvaluatedKey.
+    """
+    
+    @pytest.mark.asyncio
+    @given(
+        limit=st.integers(min_value=1, max_value=100),
+        num_items=st.integers(min_value=0, max_value=200)
+    )
+    @settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture], deadline=None)
+    async def test_pagination_respects_limit(self, limit: int, num_items: int):
+        """Test that pagination returns at most 'limit' items per page."""
+        # Create mock DynamoDB client
+        mock_client = Mock(spec=DynamoDBClient)
+        mock_table = Mock()
+        mock_client.get_table.return_value = mock_table
+        
+        # Create mock items
+        mock_items = [
+            {
+                'user_id': f'user_{i}',
+                'timestamp': datetime.now().isoformat(),
+                'recommendation_id': f'rec_{i}',
+                'query_id': f'query_{i}',
+                'recommendation_text': f'Recommendation {i}',
+                'created_at': datetime.now().isoformat()
+            }
+            for i in range(num_items)
+        ]
+        
+        # Mock the query response
+        items_to_return = mock_items[:limit] if num_items > limit else mock_items
+        has_more = num_items > limit
+        
+        mock_response = {
+            'Items': items_to_return,
+        }
+        
+        if has_more:
+            mock_response['LastEvaluatedKey'] = {'user_id': f'user_{limit-1}', 'timestamp': datetime.now().isoformat()}
+        
+        mock_client._execute_with_retry = AsyncMock(return_value=mock_response)
+        
+        # Create repository
+        from data.repositories import RecommendationRepository
+        repo = RecommendationRepository(mock_client, env='test')
+        
+        # Query with limit
+        result = await repo.list_user_recommendations(
+            user_id='test_user',
+            limit=limit
+        )
+        
+        # Property: Result should contain at most 'limit' items
+        assert len(result['items']) <= limit, \
+            f"Result should contain at most {limit} items, got {len(result['items'])}"
+        
+        # Property: If there are more items than limit, LastEvaluatedKey should be present
+        if num_items > limit:
+            assert 'last_evaluated_key' in result, \
+                "LastEvaluatedKey should be present when there are more items"
+        
+        # Property: If items <= limit, LastEvaluatedKey should not be present
+        if num_items <= limit:
+            assert 'last_evaluated_key' not in result, \
+                "LastEvaluatedKey should not be present when all items fit in one page"
+    
+    @pytest.mark.asyncio
+    @given(
+        page_size=st.integers(min_value=1, max_value=50),
+        total_items=st.integers(min_value=1, max_value=150)
+    )
+    @settings(max_examples=50, suppress_health_check=[HealthCheck.function_scoped_fixture], deadline=None)
+    async def test_pagination_can_retrieve_all_items(self, page_size: int, total_items: int):
+        """Test that pagination can retrieve all items across multiple pages."""
+        # Create mock DynamoDB client
+        mock_client = Mock(spec=DynamoDBClient)
+        mock_table = Mock()
+        mock_client.get_table.return_value = mock_table
+        
+        # Create all items
+        all_items = [
+            {
+                'farm_id': f'farm_{i}',
+                'owner_id': 'test_owner',
+                'location': {'lat': 0.0, 'lon': 0.0},
+                'area_hectares': 1.0,
+                'soil_type': 'loamy',
+                'irrigation_type': 'drip',
+                'crops': [],
+                'created_at': datetime.now().isoformat(),
+                'updated_at': datetime.now().isoformat(),
+                'metadata': {}
+            }
+            for i in range(total_items)
+        ]
+        
+        # Track which page we're on
+        page_num = [0]
+        
+        def mock_query(operation, **kwargs):
+            """Mock query that returns paginated results."""
+            start_idx = page_num[0] * page_size
+            end_idx = min(start_idx + page_size, total_items)
+            items = all_items[start_idx:end_idx]
+            
+            response = {'Items': items}
+            
+            if end_idx < total_items:
+                response['LastEvaluatedKey'] = {'owner_id': 'test_owner', 'created_at': all_items[end_idx-1]['created_at']}
+            
+            page_num[0] += 1
+            return response
+        
+        mock_client._execute_with_retry = AsyncMock(side_effect=mock_query)
+        
+        # Create repository
+        from data.repositories import FarmRepository
+        repo = FarmRepository(mock_client, env='test')
+        
+        # Retrieve all items using pagination
+        retrieved_items = []
+        exclusive_start_key = None
+        
+        while True:
+            result = await repo.list_user_farms(
+                owner_id='test_owner',
+                limit=page_size,
+                exclusive_start_key=exclusive_start_key
+            )
+            
+            retrieved_items.extend(result['items'])
+            
+            if 'last_evaluated_key' not in result:
+                break
+            
+            exclusive_start_key = result['last_evaluated_key']
+        
+        # Property: Should retrieve all items
+        assert len(retrieved_items) == total_items, \
+            f"Should retrieve all {total_items} items, got {len(retrieved_items)}"
+    
+    @pytest.mark.asyncio
+    @given(
+        limit=st.integers(min_value=1, max_value=100)
+    )
+    @settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    async def test_pagination_with_exclusive_start_key(self, limit: int):
+        """Test that pagination correctly uses exclusive_start_key."""
+        # Create mock DynamoDB client
+        mock_client = Mock(spec=DynamoDBClient)
+        mock_table = Mock()
+        mock_client.get_table.return_value = mock_table
+        
+        # Track if exclusive_start_key was passed
+        received_start_key = [None]
+        
+        def mock_query(operation, **kwargs):
+            """Mock query that checks for exclusive_start_key."""
+            received_start_key[0] = kwargs.get('ExclusiveStartKey')
+            return {'Items': []}
+        
+        mock_client._execute_with_retry = AsyncMock(side_effect=mock_query)
+        
+        # Create repository
+        from data.repositories import ProductRepository
+        repo = ProductRepository(mock_client, env='test')
+        
+        # Query with exclusive_start_key
+        test_start_key = {'product_id': 'test_product'}
+        await repo.list_farmer_products(
+            farmer_id='test_farmer',
+            limit=limit,
+            exclusive_start_key=test_start_key
+        )
+        
+        # Property: exclusive_start_key should be passed to DynamoDB query
+        assert received_start_key[0] == test_start_key, \
+            "exclusive_start_key should be passed to DynamoDB query"
+    
+    @pytest.mark.asyncio
+    @given(
+        limit=st.integers(min_value=1, max_value=1000)
+    )
+    @settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    async def test_pagination_limit_validation(self, limit: int):
+        """Test that pagination limit is properly validated and applied."""
+        # Create mock DynamoDB client
+        mock_client = Mock(spec=DynamoDBClient)
+        mock_table = Mock()
+        mock_client.get_table.return_value = mock_table
+        
+        # Track the limit passed to DynamoDB
+        received_limit = [None]
+        
+        def mock_query(operation, **kwargs):
+            """Mock query that captures the limit."""
+            received_limit[0] = kwargs.get('Limit')
+            return {'Items': []}
+        
+        mock_client._execute_with_retry = AsyncMock(side_effect=mock_query)
+        
+        # Create repository
+        from data.repositories import UserRepository
+        repo = UserRepository(mock_client, env='test')
+        
+        # For UserRepository, we need to use a method that supports pagination
+        # Since UserRepository doesn't have a list method, let's use RecommendationRepository
+        from data.repositories import RecommendationRepository
+        repo = RecommendationRepository(mock_client, env='test')
+        
+        # Query with limit
+        await repo.list_user_recommendations(
+            user_id='test_user',
+            limit=limit
+        )
+        
+        # Property: Limit should be passed to DynamoDB query
+        assert received_limit[0] == limit, \
+            f"Limit {limit} should be passed to DynamoDB query, got {received_limit[0]}"
+    
+    @pytest.mark.asyncio
+    async def test_pagination_empty_results(self):
+        """Test that pagination handles empty results correctly."""
+        # Create mock DynamoDB client
+        mock_client = Mock(spec=DynamoDBClient)
+        mock_table = Mock()
+        mock_client.get_table.return_value = mock_table
+        
+        # Mock empty response
+        mock_client._execute_with_retry = AsyncMock(return_value={'Items': []})
+        
+        # Create repository
+        from data.repositories import KnowledgeRepository
+        repo = KnowledgeRepository(mock_client, env='test')
+        
+        # Query with pagination
+        result = await repo.list_chunks_by_topic(
+            topic='test_topic',
+            limit=10
+        )
+        
+        # Property: Empty results should return empty items list
+        assert result['items'] == [], "Empty results should return empty items list"
+        
+        # Property: Empty results should not have last_evaluated_key
+        assert 'last_evaluated_key' not in result, \
+            "Empty results should not have last_evaluated_key"
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v', '--tb=short'])

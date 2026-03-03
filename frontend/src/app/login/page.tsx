@@ -3,14 +3,14 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAppStore } from '@/store/appStore'
-import { apiClient } from '@/services/api'
-import { FiMail, FiLock, FiAlertCircle } from 'react-icons/fi'
+import { useAuth } from '@/hooks/useAuth'
+import { FiPhone, FiLock, FiAlertCircle } from 'react-icons/fi'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { setUser } = useAppStore()
+  const { login } = useAuth()
   const [phoneNumber, setPhoneNumber] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -20,21 +20,21 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      if (!phoneNumber.trim()) {
-        setError('Phone number is required')
+      if (!phoneNumber.trim() || !password.trim()) {
+        setError('Phone number and password are required')
         setLoading(false)
         return
       }
 
-      // In a real app, this would authenticate the user
-      // For now, we'll create/fetch a user by phone number
-      const response = await apiClient.getUser(phoneNumber)
+      const result = await login({
+        phone_number: phoneNumber,
+        password: password,
+      })
       
-      if (response.status === 'success' && response.data?.user) {
-        setUser(response.data.user)
+      if (result.success) {
         router.push('/dashboard')
       } else {
-        setError('User not found. Please register first.')
+        setError(result.error || 'Login failed. Please try again.')
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Login failed. Please try again.')
@@ -63,13 +63,31 @@ export default function LoginPage() {
                 Phone Number
               </label>
               <div className="relative">
-                <FiMail className="absolute left-3 top-3 text-gray-400" />
+                <FiPhone className="absolute left-3 top-3 text-gray-400" />
                 <input
                   id="phone"
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="+91 98765 43210"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <FiLock className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                   disabled={loading}
                 />
