@@ -1,244 +1,409 @@
-# Project Kisan 🌾 - Providing farmers with expert help on demand
+# GramBrain - AWS Stack Version 🌾
 
 <div align="center">
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Try_Now-brightgreen?style=for-the-badge)](https://app-975609603775.us-central1.run.app/)
+[![AWS](https://img.shields.io/badge/AWS-Bedrock-orange?style=for-the-badge&logo=amazon-aws)](https://aws.amazon.com/bedrock/)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Modern-green?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Google AI](https://img.shields.io/badge/Google_AI-Gemini-orange?style=for-the-badge&logo=google)](https://ai.google.dev)
-[![ElevenLabs](https://img.shields.io/badge/ElevenLabs-Voice_AI-purple?style=for-the-badge)](https://elevenlabs.io)
+[![DynamoDB](https://img.shields.io/badge/DynamoDB-NoSQL-blue?style=for-the-badge&logo=amazon-dynamodb)](https://aws.amazon.com/dynamodb/)
 
 </div>
 
-Project Kisan is a voice-first, multilingual AI assistant for small-scale farmers. Powered by Google AI technologies and the Gemini model, it delivers crop disease diagnosis, real-time market insights, and government scheme guidance via natural voice in local languages, working even in low-network regions.
+AI-powered agricultural assistant for Indian farmers, now powered by AWS Bedrock and DynamoDB with Strands multi-agent framework.
 
 ---
 
-## 🎯 **Major Challenges Faced by Indian Farmers**
+## 🚀 What's New in AWS Version
 
-<div align="center">
-<img width="600" height="308" alt="Challenges faced by Indian Farmers" src="https://github.com/user-attachments/assets/1fc260af-1a48-42a3-9645-e5d856947065" />
-</div>
+### AWS Stack Components
 
-Indian farmers face multiple interconnected challenges that affect their productivity and income:
-- **Limited access to expert agricultural advice**
-- **Language barriers with technology solutions** 
-- **Lack of real-time market and Weather information**
-- **Difficulty in identifying crop diseases early**
-- **Complex government scheme navigation**
-- **Poor internet connectivity in rural areas**
-- **Need for natural voice interaction in local languages**
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **🤖 LLM** | AWS Bedrock (Amazon Nova Lite) | Advanced AI conversations & vision |
+| **💾 Database** | AWS DynamoDB | Scalable NoSQL storage |
+| **🎯 Agent Framework** | Strands (Custom) | Multi-agent orchestration |
+| **🖼️ Vision** | Claude Vision (Bedrock) | Crop disease diagnosis |
+| **📊 Sessions** | DynamoDB | Distributed session management |
 
----
+### Key Improvements
 
-## 💡 **Our Solution**
-
-<div align="center">
-<img width="556" height="316" alt="Project Kisan Solution" src="https://github.com/user-attachments/assets/67b3e1fa-8dff-4097-9d49-95334b0c3ca1" />
-</div>
-
-Project Kisan addresses these challenges through:
-- **AI-powered agricultural expertise** available 24/7
-- **Voice-first interface** in multiple Indian languages
-- **Real-time data integration** from government sources
-- **Offline capabilities** for low-connectivity areas
-- **Simplified access** to government schemes,weather and market data
+✅ **Scalability**: DynamoDB auto-scales with demand  
+✅ **Performance**: Amazon Nova lite for better responses  
+✅ **Reliability**: AWS managed services with 99.99% uptime  
+✅ **Cost-Effective**: Pay-per-use pricing model  
+✅ **Global**: Deploy in multiple AWS regions  
 
 ---
 
-## 🚀 **Live Application** (Server permanently shut down to save credits.)
+## 📋 Prerequisites
 
-<div align="center">
+### 1. AWS Account
 
-### **[🌐 Try Project Kisan Now →](https://app-975609603775.us-central1.run.app/)**
+- Create AWS account at https://aws.amazon.com
+- Set up IAM user with Bedrock and DynamoDB permissions
+- Generate access keys
 
-*No installation required - works on any device with a browser*
+### 2. Enable AWS Bedrock
 
-</div>
+1. Go to AWS Bedrock console
+2. Request access to Claude models
+3. Wait for approval (usually instant)
 
-### **📱 Application Preview**
+### 3. Required Permissions
 
-
-
-
-https://github.com/user-attachments/assets/9c87ca7d-401c-4ba3-9361-96f4f140447f
-
-
-
-
-
-
----
-
-## ✨ **Key Features**
-
-<div align="center">
-
-| Feature | Description | Technology |
-|---------|-------------|------------|
-| 🌱 **Crop Disease Diagnosis** | Vision AI–powered photo-based detection with localized remedies | Google Gemini Vision |
-| 🌤️ **Real-Time Weather Information** | Real-Time and Weather Forecasting for 7 days | OpenWeatherMap API |
-| 📈 **Real-Time Market Intelligence** | Live mandi prices & crop trends from government sources | AgMarkNet API |
-| 🏛️ **Government Scheme Navigator** | Eligibility checks & simplified explanations | Data.gov.in APIs |
-| 🗣️ **Voice-First & Multilingual** | Supports multiple languages as enabled by Google ADK | Speech Recognition |
-| 🎙️ **Premium Voice Synthesis** | High-quality Hindi voice responses with ElevenLabs AI | ElevenLabs TTS |
-| 📶 **Offline Support** | Cached responses via Gemini model for low-network zones | PWA + Service Workers |
-
-</div>
-
-### **🎬 Feature Showcase**
-
-#### 🌱 **Govt Scheme**
-<img width="953" height="536" alt="image" src="https://github.com/user-attachments/assets/89d43307-e62b-4e92-a5af-32ab33c28fed" />
-
-
-#### 🗣️ **Weather and Irrigation**
-<img width="955" height="564" alt="image" src="https://github.com/user-attachments/assets/8df0cc08-069e-4934-a4cb-4cfa857296fe" />
-
-
-#### 📊 **Market Intelligence**
-<img width="959" height="565" alt="image" src="https://github.com/user-attachments/assets/cb253cd8-3d1c-4a01-9c84-d74b74635355" />
-
-
----
-
-## 🏗️ **Tech Stack**
-
-<div align="center">
-
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **🎨 Frontend** | Progressive Web App (PWA) | Mobile-first, offline-capable interface |
-| **⚡ Backend** | FastAPI, Google Cloud Run, Cloud Storage | High-performance API with cloud scaling |
-| **🧠 AI & ML** | Google ADK, Gemini, Vision AI | Intelligent conversations and image analysis |
-| **🎙️ Voice AI** | ElevenLabs Text-to-Speech | Premium voice synthesis |
-| **🔗 Integrations** | AgMarkNet, eNAM, Weather APIs, Data.gov | Real-time agricultural data |
-
-</div>
-
----
-
-## 🔑 **API Configuration**
-
-| Service | Environment Variable | Required | Get API Key | Purpose |
-|---------|---------------------|----------|-------------|---------|
-| 🤖 **Google AI** | `GOOGLE_API_KEY` | ✅ **Required** | [Get Key →](https://ai.google.dev/) | AI conversations & vision |
-| 🌤️ **Weather API** | `WEATHER_API_KEY` | ✅ **Required** | [Get Key →](https://openweathermap.org/api) | Weather forecasting |
-| 🎙️ **ElevenLabs** | `ELEVENLABS_API_KEY` | ⭐ **Recommended** | [Get Key →](https://elevenlabs.io) | Premium voice synthesis |
-| 📊 **Data.gov.in** | `MANDI_API_KEY` | ⚠️ *Optional* | [Get Key →](https://www.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi) | Government market data |
-
-### **Environment Setup**
-```bash
-# Create .env file
-GOOGLE_API_KEY=your_google_ai_api_key_here
-WEATHER_API_KEY=your_openweathermap_api_key
-ELEVENLABS_API_KEY=your_elevenlabs_api_key_here  # For premium voice
-MANDI_API_KEY=your_data_gov_api_key  # Optional
-```
-### **🎙️ ElevenLabs Setup**
-1. **Sign up** at [ElevenLabs.io](https://elevenlabs.io)
-2. **Get API key** from your profile settings
-3. **Free tier**: 10,000 characters/month
-4. **Paid tiers**: Higher limits + more voice options
-
----
-
-## 🛠️ **Getting Started**
-
-### **⚡ Quick Start**
-```bash
-# Clone the repository
-git clone https://github.com/codeprofile/Project-Kisan.git
-cd Project-Kisan
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set up environment variables (add your API keys)
-cp .env.example .env
-
-# Run locally
-uvicorn app.main:app --reload
-```
-
----
-### **🎙️ Testing Voice Features**
-1. Open `http://localhost:8000`
-2. Look for **🎙️ Voice ON** toggle in chat header
-3. Send a message: "मौसम कैसा है?"
-4. Listen to high-quality Hindi voice response!
-
-### **🔧 Voice Configuration**
-Customize voice settings in `app/google_adk_integration/services/elevenlabs_voice_service.py`:
-
-```python
-# Adjust voice parameters
-self.voice_settings = {
-    "stability": 0.5,        # 0-1: Lower = more expressive
-    "similarity_boost": 0.75, # 0-1: Higher = more like original
-    "style": 0.5,            # 0-1: Style strength
-    "use_speaker_boost": True # Better quality
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": "arn:aws:bedrock:*::foundation-model/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:*"
+      ],
+      "Resource": "arn:aws:dynamodb:*:*:table/farmbot_*"
+    }
+  ]
 }
 ```
 
 ---
 
-## 📁 **Project Structure**
+## 🛠️ Installation
 
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/codeprofile/Project-Kisan.git
+cd Project-Kisan
 ```
-Project-Kisan/
-├── app/
-│   ├── google_adk_integration/
-│   │   ├── agents/              # AI agents for different domains
-│   │   ├── tools/               # AI tool functions
-│   │   ├── services/            
-│   │   │   ├── elevenlabs_voice_service.py  # 🆕 Voice synthesis
-│   │   │   └── ...              # Other business logic
-│   │   └── farmbot_service.py   # Main AI service (updated with voice)
-│   ├── templates/
-│   │   └── home.html           # Frontend interface (voice-enabled)
-│   ├── main.py                 # FastAPI application (voice endpoints)
-│   └── websocket_conn.py       # WebSocket connections
-├── requirements.txt            # Updated with voice dependencies
-└── README.md                   # This file
+
+### 2. Install Dependencies
+
+```bash
+# Install AWS-specific requirements
+pip install -r requirements-aws.txt
+```
+
+### 3. Configure Environment
+
+Create `.env` file:
+
+```bash
+# AWS Credentials
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_access_key_here
+AWS_SECRET_ACCESS_KEY=your_secret_key_here
+
+# AWS Bedrock
+BEDROCK_MODEL_ID=anthropic.claude-3-5-sonnet-20241022-v2:0
+BEDROCK_TEMPERATURE=0.7
+BEDROCK_MAX_TOKENS=4096
+
+# DynamoDB Tables
+DYNAMODB_MARKET_PRICES_TABLE=farmbot_market_prices
+DYNAMODB_SESSIONS_TABLE=farmbot_sessions
+DYNAMODB_ANALYTICS_TABLE=farmbot_analytics
+
+# External APIs
+WEATHER_API_KEY=your_openweathermap_api_key
+ELEVENLABS_API_KEY=your_elevenlabs_api_key_optional
+MANDI_API_KEY=your_data_gov_api_key_optional
+```
+
+### 4. Initialize Database
+
+```bash
+# Tables will be created automatically on first run
+# Or create manually:
+python -c "from backend.app.aws_integration.database.dynamodb_client import dynamodb_client; dynamodb_client.create_tables()"
 ```
 
 ---
 
-## 🌐 **Useful Resources**
+## 🚀 Running the Application
 
-### **📚 Documentation**
-- [Google ADK](https://google.github.io/adk-docs/streaming/custom-streaming-ws/#websocket-handling) - Agent Development Kit
-- [ElevenLabs API](https://docs.elevenlabs.io/) - Voice synthesis documentation
-- [Speech Synthesis Guide](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis) - Browser TTS fallback
+### Development Mode
 
-### **🎙️ Voice AI Resources**
-- [ElevenLabs Voice Library](https://elevenlabs.io/voice-library) - Explore available voices
-- [Voice Cloning Guide](https://elevenlabs.io/docs/voice-cloning) - Custom voice creation
-- [Audio Quality Tips](https://elevenlabs.io/docs/audio-quality) - Optimization guide
+```bash
+python -m uvicorn backend.app.main_aws:app --reload --host 0.0.0.0 --port 8000
+```
 
-### **🌾 Agricultural Data Sources**
-- [AgMarkNet Portal](https://agmarknet.gov.in/) - Government market prices
-- [eNAM Platform](https://enam.gov.in/) - National agriculture market
-- [Data.gov.in](https://data.gov.in/) - Open government data
-- [Weather API](https://openweathermap.org/) - Weather forecasting service
+### Production Mode
 
-### **🛠️ Development Resources**
-- [Google Cloud Run](https://cloud.google.com/run) - Deployment platform
-- [WebSocket Guide](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) - Real-time communication
-- [Speech Recognition API](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition) - Voice interface
+```bash
+gunicorn backend.app.main_aws:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+```
+
+### Access Application
+
+Open browser: `http://localhost:8000`
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────┐
+│         FastAPI Application             │
+│           (main_aws.py)                 │
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│      FarmBot Service AWS                │
+│    (farmbot_service_aws.py)             │
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│      Strands Orchestrator               │
+│    (Multi-Agent Coordinator)            │
+└─┬────┬────┬────┬──────────────────────┘
+  │    │    │    │
+  ▼    ▼    ▼    ▼
+┌───┐┌───┐┌───┐┌───┐
+│ W ││ M ││ C ││ G │  Specialized Agents
+│ e ││ a ││ r ││ o │
+│ a ││ r ││ o ││ v │
+│ t ││ k ││ p ││ t │
+│ h ││ e ││   ││   │
+│ e ││ t ││ H ││ S │
+│ r ││   ││ e ││ c │
+│   ││   ││ a ││ h │
+│   ││   ││ l ││ e │
+│   ││   ││ t ││ m │
+│   ││   ││ h ││ e │
+└───┘└───┘└───┘└───┘
+  │    │    │    │
+  └────┴────┴────┴──────────┐
+                             ▼
+              ┌──────────────────────────┐
+              │     AWS Bedrock          │
+              │  (Claude 3.5 Sonnet)     │
+              └──────────────────────────┘
+                             │
+                             ▼
+              ┌──────────────────────────┐
+              │     AWS DynamoDB         │
+              │  (3 Tables)              │
+              └──────────────────────────┘
+```
+
+---
+
+## ✨ Features
+
+### 1. 🌱 Crop Health Diagnosis
+- Upload crop images
+- AI-powered disease detection using Claude Vision
+- Treatment recommendations
+- Locally available medicines
+
+### 2. 🌤️ Weather Forecasting
+- Real-time weather data
+- 7-day forecasts
+- Irrigation recommendations
+- Farming operation timing
+
+### 3. 📊 Market Intelligence
+- Live mandi prices from DynamoDB
+- Price trend analysis
+- Selling recommendations
+- Best market identification
+
+### 4. 🏛️ Government Schemes
+- AI-powered scheme search
+- Eligibility checking
+- Application guidance
+- Document requirements
+
+---
+
+## 📊 DynamoDB Tables
+
+### Market Prices Table
+```
+PK: COMMODITY#{commodity}
+SK: DATE#{date}#MARKET#{market_id}
+Attributes: state, district, market, prices, trends
+```
+
+### Sessions Table
+```
+PK: SESSION#{session_id}
+SK: METADATA
+Attributes: user_id, state, created_at, ttl
+```
+
+### Analytics Table
+```
+PK: ANALYTICS#{commodity}
+SK: DATE#{date}
+Attributes: statistics, trends, predictions
+```
+
+---
+
+## 🧪 Testing
+
+### Test Bedrock Connection
+
+```python
+from backend.app.aws_integration.bedrock.bedrock_client import bedrock_client
+
+response = bedrock_client.invoke_model(
+    prompt="Hello, how are you?",
+    temperature=0.7
+)
+print(response)
+```
+
+### Test DynamoDB
+
+```python
+from backend.app.aws_integration.database.dynamodb_client import dynamodb_client
+
+# Create tables
+dynamodb_client.create_tables()
+
+# Test session
+success = dynamodb_client.create_session(
+    session_id="test",
+    user_id="user1",
+    initial_state={"test": True}
+)
+```
+
+---
+
+## 💰 Cost Estimation
+
+### AWS Bedrock (Claude 3.5 Sonnet)
+- Input: ~$3 per 1M tokens
+- Output: ~$15 per 1M tokens
+- **Estimated**: $10-50/month for moderate usage
+
+### DynamoDB (On-Demand)
+- Write: $1.25 per 1M requests
+- Read: $0.25 per 1M requests
+- **Estimated**: $5-20/month for moderate usage
+
+### Total Estimated Cost
+**$15-70/month** for moderate usage (1000-5000 queries/day)
+
+---
+
+## 🔧 Configuration
+
+### Bedrock Models
+
+Available models:
+- `anthropic.claude-3-5-sonnet-20241022-v2:0` (Recommended)
+- `anthropic.claude-3-haiku-20240307-v1:0` (Faster, cheaper)
+- `anthropic.claude-3-opus-20240229-v1:0` (Most capable)
+
+### DynamoDB Settings
+
+```python
+# On-Demand (default)
+BillingMode='PAY_PER_REQUEST'
+
+# Provisioned (for consistent traffic)
+BillingMode='PROVISIONED'
+ReadCapacityUnits=5
+WriteCapacityUnits=5
+```
+
+---
+
+## 📈 Monitoring
+
+### CloudWatch Metrics
+
+Monitor:
+- Bedrock invocation count
+- DynamoDB read/write units
+- API latency
+- Error rates
+
+### Logging
+
+```python
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+```
+
+---
+
+## 🚀 Deployment
+
+### AWS Elastic Beanstalk
+
+```bash
+# Install EB CLI
+pip install awsebcli
+
+# Initialize
+eb init -p python-3.8 project-kisan
+
+# Create environment
+eb create project-kisan-env
+
+# Deploy
+eb deploy
+```
+
+### AWS ECS/Fargate
+
+```bash
+# Build Docker image
+docker build -t project-kisan-aws .
+
+# Push to ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+docker tag project-kisan-aws:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/project-kisan-aws:latest
+docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/project-kisan-aws:latest
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
+
+---
+
+## 🙏 Acknowledgments
+
+- AWS Bedrock team for Claude models
+- AWS DynamoDB team for scalable database
+- OpenWeatherMap for weather data
+- Data.gov.in for market data
 
 ---
 
 <div align="center">
 
-## 🌾 **Built with ❤️ for Indian Farmers**
+**Built with ❤️ for Indian Farmers**
 
-[![GitHub stars](https://img.shields.io/github/stars/codeprofile/Project-Kisan?style=social)](https://github.com/codeprofile/Project-Kisan)
-[![GitHub forks](https://img.shields.io/github/forks/codeprofile/Project-Kisan?style=social)](https://github.com/codeprofile/Project-Kisan)
-
-**[⭐ Star this repository](https://github.com/codeprofile/Project-Kisan)** to support AI-powered agriculture!
-
-*Transforming farming through artificial intelligence*
+[⭐ Star this repository](https://github.com/codeprofile/Project-Kisan) to support AI-powered agriculture!
 
 </div>

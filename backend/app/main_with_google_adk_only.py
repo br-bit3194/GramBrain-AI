@@ -19,7 +19,7 @@ import base64
 
 
 
-app = FastAPI(title="Project Kisan",
+app = FastAPI(title="GramBrain",
               description="AI-Powered Agricultural Assistant with Real Crop Health Diagnosis")
 
 # Mount static files and templates
