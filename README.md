@@ -1,294 +1,244 @@
-# GramBrain AI - Multi-Agent Agricultural Intelligence Platform
+# Project Kisan 🌾 - Providing farmers with expert help on demand
 
-A next-generation, cloud-native, multi-agent AI platform designed to serve as "The AI Brain for Every Village in Bharat". GramBrain AI uses collaborative AI agents powered by Large Language Model (LLM) reasoning and Retrieval-Augmented Generation (RAG) to deliver real-time, explainable, and scalable agricultural intelligence.
+<div align="center">
 
-## Features
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Try_Now-brightgreen?style=for-the-badge)](https://app-975609603775.us-central1.run.app/)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Modern-green?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+[![Google AI](https://img.shields.io/badge/Google_AI-Gemini-orange?style=for-the-badge&logo=google)](https://ai.google.dev)
+[![ElevenLabs](https://img.shields.io/badge/ElevenLabs-Voice_AI-purple?style=for-the-badge)](https://elevenlabs.io)
 
-- **Multi-Agent Architecture**: 12 specialized AI agents collaborating through a master orchestrator
-- **LLM-Powered Reasoning**: AWS Bedrock integration with Claude, Titan, and Llama models
-- **RAG-Based Knowledge Retrieval**: Semantic search for contextual agricultural knowledge
-- **Explainable AI**: Transparent reasoning chains for every recommendation
-- **Farmer Intelligence**: Personalized crop advisory, weather-aware irrigation, pest detection
-- **Village Intelligence**: Aggregated insights for collective decision-making
-- **Sustainability Tracking**: Environmental impact metrics and eco-friendly recommendations
-- **Rural-to-Urban Marketplace**: Direct farmer-to-consumer connections with Pure Product Scores
+</div>
 
-## Architecture
+Project Kisan is a voice-first, multilingual AI assistant for small-scale farmers. Powered by Google AI technologies and the Gemini model, it delivers crop disease diagnosis, real-time market insights, and government scheme guidance via natural voice in local languages, working even in low-network regions.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Presentation Layer                           │
-│  React Native Mobile App │ Next.js Web Dashboard │ Voice UI     │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                      API Gateway Layer                           │
-│  Amazon API Gateway │ WebSocket API │ REST API │ GraphQL        │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                Multi-Agent Intelligence Layer                    │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Orchestrator Agent (Master)                 │   │
-│  │  - Coordinates all agents                                │   │
-│  │  - Resolves conflicts using LLM                          │   │
-│  │  - Synthesizes final recommendations                     │   │
-│  └─────────────────────────┬───────────────────────────────┘   │
-│                             │                                    │
-│  Weather │ Soil │ Crop Advisory │ Pest │ Irrigation │ Yield    │
-│  Market │ Sustainability │ Marketplace │ Farmer Interaction    │
-│  Village Intelligence                                            │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                    LLM & RAG Layer                               │
-│  AWS Bedrock (Claude, Titan, Llama) │ Vector Database          │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                      Data Layer                                  │
-│  RDS PostgreSQL │ DynamoDB │ Timestream │ S3 Data Lake         │
-└──────────────────────────────────────────────────────────────────┘
-```
+---
 
-## Quick Start
+## 🎯 **Major Challenges Faced by Indian Farmers**
 
-### Prerequisites
+<div align="center">
+<img width="600" height="308" alt="Challenges faced by Indian Farmers" src="https://github.com/user-attachments/assets/1fc260af-1a48-42a3-9645-e5d856947065" />
+</div>
 
-- Python 3.9+
-- AWS Account with Bedrock access
-- AWS CLI configured with credentials
+Indian farmers face multiple interconnected challenges that affect their productivity and income:
+- **Limited access to expert agricultural advice**
+- **Language barriers with technology solutions** 
+- **Lack of real-time market and Weather information**
+- **Difficulty in identifying crop diseases early**
+- **Complex government scheme navigation**
+- **Poor internet connectivity in rural areas**
+- **Need for natural voice interaction in local languages**
 
-### Installation
+---
 
-1. Clone the repository:
+## 💡 **Our Solution**
+
+<div align="center">
+<img width="556" height="316" alt="Project Kisan Solution" src="https://github.com/user-attachments/assets/67b3e1fa-8dff-4097-9d49-95334b0c3ca1" />
+</div>
+
+Project Kisan addresses these challenges through:
+- **AI-powered agricultural expertise** available 24/7
+- **Voice-first interface** in multiple Indian languages
+- **Real-time data integration** from government sources
+- **Offline capabilities** for low-connectivity areas
+- **Simplified access** to government schemes,weather and market data
+
+---
+
+## 🚀 **Live Application** (Server permanently shut down to save credits.)
+
+<div align="center">
+
+### **[🌐 Try Project Kisan Now →](https://app-975609603775.us-central1.run.app/)**
+
+*No installation required - works on any device with a browser*
+
+</div>
+
+### **📱 Application Preview**
+
+
+
+
+https://github.com/user-attachments/assets/9c87ca7d-401c-4ba3-9361-96f4f140447f
+
+
+
+
+
+
+---
+
+## ✨ **Key Features**
+
+<div align="center">
+
+| Feature | Description | Technology |
+|---------|-------------|------------|
+| 🌱 **Crop Disease Diagnosis** | Vision AI–powered photo-based detection with localized remedies | Google Gemini Vision |
+| 🌤️ **Real-Time Weather Information** | Real-Time and Weather Forecasting for 7 days | OpenWeatherMap API |
+| 📈 **Real-Time Market Intelligence** | Live mandi prices & crop trends from government sources | AgMarkNet API |
+| 🏛️ **Government Scheme Navigator** | Eligibility checks & simplified explanations | Data.gov.in APIs |
+| 🗣️ **Voice-First & Multilingual** | Supports multiple languages as enabled by Google ADK | Speech Recognition |
+| 🎙️ **Premium Voice Synthesis** | High-quality Hindi voice responses with ElevenLabs AI | ElevenLabs TTS |
+| 📶 **Offline Support** | Cached responses via Gemini model for low-network zones | PWA + Service Workers |
+
+</div>
+
+### **🎬 Feature Showcase**
+
+#### 🌱 **Govt Scheme**
+<img width="953" height="536" alt="image" src="https://github.com/user-attachments/assets/89d43307-e62b-4e92-a5af-32ab33c28fed" />
+
+
+#### 🗣️ **Weather and Irrigation**
+<img width="955" height="564" alt="image" src="https://github.com/user-attachments/assets/8df0cc08-069e-4934-a4cb-4cfa857296fe" />
+
+
+#### 📊 **Market Intelligence**
+<img width="959" height="565" alt="image" src="https://github.com/user-attachments/assets/cb253cd8-3d1c-4a01-9c84-d74b74635355" />
+
+
+---
+
+## 🏗️ **Tech Stack**
+
+<div align="center">
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **🎨 Frontend** | Progressive Web App (PWA) | Mobile-first, offline-capable interface |
+| **⚡ Backend** | FastAPI, Google Cloud Run, Cloud Storage | High-performance API with cloud scaling |
+| **🧠 AI & ML** | Google ADK, Gemini, Vision AI | Intelligent conversations and image analysis |
+| **🎙️ Voice AI** | ElevenLabs Text-to-Speech | Premium voice synthesis |
+| **🔗 Integrations** | AgMarkNet, eNAM, Weather APIs, Data.gov | Real-time agricultural data |
+
+</div>
+
+---
+
+## 🔑 **API Configuration**
+
+| Service | Environment Variable | Required | Get API Key | Purpose |
+|---------|---------------------|----------|-------------|---------|
+| 🤖 **Google AI** | `GOOGLE_API_KEY` | ✅ **Required** | [Get Key →](https://ai.google.dev/) | AI conversations & vision |
+| 🌤️ **Weather API** | `WEATHER_API_KEY` | ✅ **Required** | [Get Key →](https://openweathermap.org/api) | Weather forecasting |
+| 🎙️ **ElevenLabs** | `ELEVENLABS_API_KEY` | ⭐ **Recommended** | [Get Key →](https://elevenlabs.io) | Premium voice synthesis |
+| 📊 **Data.gov.in** | `MANDI_API_KEY` | ⚠️ *Optional* | [Get Key →](https://www.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi) | Government market data |
+
+### **Environment Setup**
 ```bash
-git clone https://github.com/grambrain/grambrain-ai.git
-cd grambrain-ai
+# Create .env file
+GOOGLE_API_KEY=your_google_ai_api_key_here
+WEATHER_API_KEY=your_openweathermap_api_key
+ELEVENLABS_API_KEY=your_elevenlabs_api_key_here  # For premium voice
+MANDI_API_KEY=your_data_gov_api_key  # Optional
 ```
+### **🎙️ ElevenLabs Setup**
+1. **Sign up** at [ElevenLabs.io](https://elevenlabs.io)
+2. **Get API key** from your profile settings
+3. **Free tier**: 10,000 characters/month
+4. **Paid tiers**: Higher limits + more voice options
 
-2. Create virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+---
 
-3. Install dependencies:
+## 🛠️ **Getting Started**
+
+### **⚡ Quick Start**
 ```bash
+# Clone the repository
+git clone https://github.com/codeprofile/Project-Kisan.git
+cd Project-Kisan
+
+# Install dependencies
 pip install -r requirements.txt
-```
 
-4. Configure environment:
-```bash
+# Set up environment variables (add your API keys)
 cp .env.example .env
-# Edit .env with your AWS credentials and configuration
+
+# Run locally
+uvicorn app.main:app --reload
 ```
 
-### Usage
+---
+### **🎙️ Testing Voice Features**
+1. Open `http://localhost:8000`
+2. Look for **🎙️ Voice ON** toggle in chat header
+3. Send a message: "मौसम कैसा है?"
+4. Listen to high-quality Hindi voice response!
+
+### **🔧 Voice Configuration**
+Customize voice settings in `app/google_adk_integration/services/elevenlabs_voice_service.py`:
 
 ```python
-import asyncio
-from src.system import GramBrainSystem
-
-async def main():
-    # Initialize system
-    system = GramBrainSystem(aws_region="us-east-1")
-    await system.initialize()
-    
-    # Process a query
-    result = system.process_query(
-        query_text="Should I irrigate my wheat field today?",
-        user_id="farmer_001",
-        farm_id="farm_001",
-        farm_location={"lat": 28.5, "lon": 77.0},
-        farm_size_hectares=2.0,
-        crop_type="wheat",
-        growth_stage="tillering",
-        soil_type="loamy",
-    )
-    
-    print("Recommendation:", result["recommendation"])
-    print("Confidence:", result["confidence"])
-    
-    system.shutdown()
-
-asyncio.run(main())
+# Adjust voice parameters
+self.voice_settings = {
+    "stability": 0.5,        # 0-1: Lower = more expressive
+    "similarity_boost": 0.75, # 0-1: Higher = more like original
+    "style": 0.5,            # 0-1: Style strength
+    "use_speaker_boost": True # Better quality
+}
 ```
 
-## Project Structure
+---
+
+## 📁 **Project Structure**
 
 ```
-grambrain-ai/
-├── src/
-│   ├── core/                 # Agent framework and orchestrator
-│   ├── agents/               # Specialized AI agents
-│   ├── llm/                  # LLM integration (AWS Bedrock)
-│   ├── rag/                  # RAG pipeline and knowledge retrieval
-│   ├── data/                 # Data models and database layer
-│   ├── api/                  # REST API endpoints
-│   └── utils/                # Utilities and helpers
-├── tests/                    # Unit and integration tests
-├── config/                   # Configuration files
-├── requirements.txt          # Python dependencies
-└── README.md                 # This file
+Project-Kisan/
+├── app/
+│   ├── google_adk_integration/
+│   │   ├── agents/              # AI agents for different domains
+│   │   ├── tools/               # AI tool functions
+│   │   ├── services/            
+│   │   │   ├── elevenlabs_voice_service.py  # 🆕 Voice synthesis
+│   │   │   └── ...              # Other business logic
+│   │   └── farmbot_service.py   # Main AI service (updated with voice)
+│   ├── templates/
+│   │   └── home.html           # Frontend interface (voice-enabled)
+│   ├── main.py                 # FastAPI application (voice endpoints)
+│   └── websocket_conn.py       # WebSocket connections
+├── requirements.txt            # Updated with voice dependencies
+└── README.md                   # This file
 ```
 
-## Agents
+---
 
-### Implemented
+## 🌐 **Useful Resources**
 
-- **Weather Agent**: Analyzes weather forecasts and provides irrigation recommendations
-- **Soil Agent**: Analyzes soil health and recommends amendments
+### **📚 Documentation**
+- [Google ADK](https://google.github.io/adk-docs/streaming/custom-streaming-ws/#websocket-handling) - Agent Development Kit
+- [ElevenLabs API](https://docs.elevenlabs.io/) - Voice synthesis documentation
+- [Speech Synthesis Guide](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis) - Browser TTS fallback
 
-### In Development
+### **🎙️ Voice AI Resources**
+- [ElevenLabs Voice Library](https://elevenlabs.io/voice-library) - Explore available voices
+- [Voice Cloning Guide](https://elevenlabs.io/docs/voice-cloning) - Custom voice creation
+- [Audio Quality Tips](https://elevenlabs.io/docs/audio-quality) - Optimization guide
 
-- **Crop Advisory Agent**: Crop-specific guidance
-- **Pest & Disease Agent**: Pest detection and treatment
-- **Irrigation Optimization Agent**: Water usage optimization
-- **Yield Prediction Agent**: Harvest forecasting
-- **Market Intelligence Agent**: Price predictions and market insights
-- **Sustainability Agent**: Environmental impact tracking
-- **Marketplace Agent**: Product listings and Pure Product Scores
-- **Farmer Interaction Agent**: Multilingual voice interface
-- **Village Intelligence Agent**: Collective insights
+### **🌾 Agricultural Data Sources**
+- [AgMarkNet Portal](https://agmarknet.gov.in/) - Government market prices
+- [eNAM Platform](https://enam.gov.in/) - National agriculture market
+- [Data.gov.in](https://data.gov.in/) - Open government data
+- [Weather API](https://openweathermap.org/) - Weather forecasting service
 
-## Data Models
+### **🛠️ Development Resources**
+- [Google Cloud Run](https://cloud.google.com/run) - Deployment platform
+- [WebSocket Guide](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) - Real-time communication
+- [Speech Recognition API](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition) - Voice interface
 
-### Core Entities
+---
 
-- **User**: Farmer, village leader, policymaker, or consumer
-- **Farm**: Farm location, size, soil type, crops
-- **CropCycle**: Planting, growth, harvest data
-- **SoilHealthData**: NPK levels, pH, organic carbon
-- **WeatherData**: Temperature, rainfall, forecasts
-- **AgentOutput**: Standardized agent analysis and recommendations
-- **Recommendation**: Final synthesized recommendation with reasoning
-- **Product**: Marketplace product listings with Pure Product Scores
+<div align="center">
 
-## LLM Integration
+## 🌾 **Built with ❤️ for Indian Farmers**
 
-GramBrain uses AWS Bedrock for LLM inference:
+[![GitHub stars](https://img.shields.io/github/stars/codeprofile/Project-Kisan?style=social)](https://github.com/codeprofile/Project-Kisan)
+[![GitHub forks](https://img.shields.io/github/forks/codeprofile/Project-Kisan?style=social)](https://github.com/codeprofile/Project-Kisan)
 
-- **Claude 3 Sonnet**: Primary model for reasoning and synthesis
-- **Claude 3 Haiku**: Lightweight model for simple tasks
-- **Titan Text**: Alternative model for cost optimization
-- **Llama 2 70B**: Open-source alternative
+**[⭐ Star this repository](https://github.com/codeprofile/Project-Kisan)** to support AI-powered agriculture!
 
-## RAG (Retrieval-Augmented Generation)
+*Transforming farming through artificial intelligence*
 
-Knowledge retrieval system for grounding LLM responses:
-
-- **Vector Database**: In-memory (dev), OpenSearch (production)
-- **Embeddings**: AWS Bedrock Titan Embeddings
-- **Knowledge Sources**: Research papers, best practices, case studies, government guidelines
-
-## Testing
-
-Run tests:
-```bash
-pytest tests/ -v
-```
-
-Run with coverage:
-```bash
-pytest tests/ --cov=src --cov-report=html
-```
-
-## Configuration
-
-### Environment Variables
-
-See `.env.example` for all available configuration options.
-
-### AWS Configuration
-
-Ensure your AWS credentials are configured:
-```bash
-aws configure
-```
-
-## Development
-
-### Adding a New Agent
-
-1. Create agent class in `src/agents/`:
-```python
-from src.core import Agent, AgentOutput, Query, UserContext
-
-class MyAgent(Agent):
-    def __init__(self):
-        super().__init__("my_agent")
-    
-    async def analyze(self, query: Query, context: UserContext) -> AgentOutput:
-        # Implementation
-        pass
-```
-
-2. Register in `src/system.py`:
-```python
-self.registry.register_agent_class("my_agent", MyAgent)
-```
-
-### Adding Knowledge to RAG
-
-```python
-await system.add_knowledge(
-    chunk_id="unique_id",
-    content="Knowledge content",
-    source="best_practice",
-    topic="irrigation",
-    crop_type="wheat",
-    region="north_india",
-)
-```
-
-## Performance Targets
-
-- **Recommendation Latency**: < 3 seconds for 95% of queries
-- **LLM Accuracy**: 85%+ for yield predictions within ±15%
-- **Market Price Forecast**: 75%+ directional accuracy for 7-day forecasts
-- **Pest Detection**: 90%+ accuracy from crop images
-- **System Availability**: 99.9% uptime
-
-## Correctness Properties
-
-The system implements 30 formal correctness properties covering:
-
-- Multi-agent coordination and communication
-- LLM integration and fallback mechanisms
-- RAG knowledge retrieval and attribution
-- Recommendation explainability
-- Data integrity and privacy
-- Marketplace features and traceability
-
-See `design.md` for complete property specifications.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Support
-
-For issues, questions, or suggestions:
-- GitHub Issues: https://github.com/grambrain/grambrain-ai/issues
-- Email: support@grambrain.ai
-
-## Roadmap
-
-- Phase 1: Core multi-agent framework (current)
-- Phase 2: Mobile app and voice interface
-- Phase 3: Marketplace and consumer features
-- Phase 4: Advanced analytics and policymaker dashboard
-- Phase 5: IoT sensor integration and real-time data pipelines
-
-## Acknowledgments
-
-Built with support from agricultural experts, farmers, and the rural development community.
+</div>
