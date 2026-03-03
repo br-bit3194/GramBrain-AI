@@ -1,12 +1,27 @@
 # app/aws_integration/database/dynamodb_client.py
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
+from boto3.dynamodb.types import TypeSerializer
 from typing import Dict, Any, List, Optional
 import logging
 from datetime import datetime, timedelta
+from decimal import Decimal
 from ..config.aws_config import get_aws_credentials, aws_config
 
 logger = logging.getLogger(__name__)
+
+
+def convert_floats_to_decimals(obj: Any) -> Any:
+    """Recursively convert floats to Decimals and datetime to ISO strings for DynamoDB"""
+    if isinstance(obj, float):
+        return Decimal(str(obj))
+    elif isinstance(obj, datetime):
+        return obj.isoformat()
+    elif isinstance(obj, dict):
+        return {k: convert_floats_to_decimals(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_floats_to_decimals(item) for item in obj]
+    return obj
 
 
 class DynamoDBClient:
@@ -31,6 +46,7 @@ class DynamoDBClient:
     def put_market_price(self, price_data: Dict[str, Any]) -> bool:
         """Insert or update market price"""
         try:
+            price_data = convert_floats_to_decimals(price_data)
             self.market_prices_table.put_item(Item=price_data)
             return True
         except Exception as e:
@@ -69,6 +85,7 @@ class DynamoDBClient:
         try:
             with self.market_prices_table.batch_writer() as batch:
                 for price in prices:
+                    price = convert_floats_to_decimals(price)
                     batch.put_item(Item=price)
             return len(prices)
         except Exception as e:
@@ -96,6 +113,9 @@ class DynamoDBClient:
                 'ttl': ttl
             }
             
+            # Convert floats to decimals
+            session_data = convert_floats_to_decimals(session_data)
+            
             self.sessions_table.put_item(Item=session_data)
             return True
         except Exception as e:
@@ -119,6 +139,8 @@ class DynamoDBClient:
     def update_session_state(self, session_id: str, state_updates: Dict[str, Any]) -> bool:
         """Update session state"""
         try:
+            state_updates = convert_floats_to_decimals(state_updates)
+            
             self.sessions_table.update_item(
                 Key={
                     'pk': f"SESSION#{session_id}",
@@ -145,6 +167,7 @@ class DynamoDBClient:
     def put_analytics(self, analytics_data: Dict[str, Any]) -> bool:
         """Insert or update analytics"""
         try:
+            analytics_data = convert_floats_to_decimals(analytics_data)
             self.analytics_table.put_item(Item=analytics_data)
             return True
         except Exception as e:

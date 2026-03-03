@@ -28,44 +28,77 @@ class BedrockClient:
         max_tokens: Optional[int] = None,
         stop_sequences: Optional[List[str]] = None
     ) -> Dict[str, Any]:
-        """Invoke Bedrock model (Claude)"""
+        """Invoke Bedrock model (supports both Claude and Nova)"""
         try:
-            # Prepare messages
-            messages = [
-                {
-                    "role": "user",
-                    "content": prompt
+            model_id = self.config['model_id']
+            
+            # Check if it's a Nova model
+            if 'nova' in model_id.lower():
+                # Nova API format
+                body = {
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [{"text": prompt}]
+                        }
+                    ],
+                    "inferenceConfig": {
+                        "temperature": temperature or self.config['temperature'],
+                        "max_new_tokens": max_tokens or self.config['max_tokens']
+                    }
                 }
-            ]
-            
-            # Prepare request body for Claude
-            body = {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": max_tokens or self.config['max_tokens'],
-                "temperature": temperature or self.config['temperature'],
-                "messages": messages
-            }
-            
-            if system_prompt:
-                body["system"] = system_prompt
-            
-            if stop_sequences:
-                body["stop_sequences"] = stop_sequences
+                
+                if system_prompt:
+                    body["system"] = [{"text": system_prompt}]
+                
+                if stop_sequences:
+                    body["inferenceConfig"]["stopSequences"] = stop_sequences
+            else:
+                # Claude API format
+                messages = [
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ]
+                
+                body = {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": max_tokens or self.config['max_tokens'],
+                    "temperature": temperature or self.config['temperature'],
+                    "messages": messages
+                }
+                
+                if system_prompt:
+                    body["system"] = system_prompt
+                
+                if stop_sequences:
+                    body["stop_sequences"] = stop_sequences
             
             # Invoke model
             response = self.bedrock_runtime.invoke_model(
-                modelId=self.config['model_id'],
+                modelId=model_id,
                 body=json.dumps(body)
             )
             
             # Parse response
             response_body = json.loads(response['body'].read())
             
+            # Extract content based on model type
+            if 'nova' in model_id.lower():
+                content = response_body['output']['message']['content'][0]['text']
+                stop_reason = response_body.get('stopReason')
+                usage = response_body.get('usage', {})
+            else:
+                content = response_body['content'][0]['text']
+                stop_reason = response_body.get('stop_reason')
+                usage = response_body.get('usage', {})
+            
             return {
                 "status": "success",
-                "content": response_body['content'][0]['text'],
-                "stop_reason": response_body.get('stop_reason'),
-                "usage": response_body.get('usage', {})
+                "content": content,
+                "stop_reason": stop_reason,
+                "usage": usage
             }
             
         except Exception as e:

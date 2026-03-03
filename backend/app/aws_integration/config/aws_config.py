@@ -1,7 +1,35 @@
 # app/aws_integration/config/aws_config.py
 from typing import Dict, Any
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
+from dotenv import load_dotenv
 
+
+# Find and load .env file
+def find_and_load_env() -> str:
+    """Find and load the .env file in various possible locations"""
+    possible_paths = [
+        Path("backend/.env"),  # From project root
+    ]
+    
+    for path in possible_paths:
+        if path.exists():
+            load_dotenv(path)
+            return str(path)
+    
+    # Try to load from backend/.env anyway
+    load_dotenv("backend/.env")
+    return "backend/.env"
+
+
+# Load environment variables
+env_file_path = find_and_load_env()
+
+# Force override system environment variables with .env values
+# Remove AWS_SESSION_TOKEN if it exists (from temporary credentials)
+if "AWS_SESSION_TOKEN" in os.environ:
+    del os.environ["AWS_SESSION_TOKEN"]
 
 class AWSConfig(BaseSettings):
     """AWS Configuration loaded from .env file"""
@@ -27,8 +55,6 @@ class AWSConfig(BaseSettings):
     mandi_api_key: str = ""
     
     model_config = SettingsConfigDict(
-        env_file="backend/.env",
-        env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore"
     )
@@ -36,6 +62,19 @@ class AWSConfig(BaseSettings):
 
 # Global config instance
 aws_config = AWSConfig()
+
+# Also set them as environment variables to ensure boto3 picks them up
+if os.getenv("AWS_ACCESS_KEY_ID"):
+    os.environ["AWS_ACCESS_KEY_ID"] = aws_config.aws_access_key_id
+if os.getenv("AWS_SECRET_ACCESS_KEY"):
+    os.environ["AWS_SECRET_ACCESS_KEY"] = aws_config.aws_secret_access_key
+if os.getenv("AWS_REGION"):
+    os.environ["AWS_DEFAULT_REGION"] = aws_config.aws_region
+
+# Debug: Log if credentials are loaded
+print(f"AWS Config loaded - Region: {aws_config.aws_region}")
+print(f"AWS Config loaded - Access Key: {aws_config.aws_access_key_id[:10] + '...' if aws_config.aws_access_key_id else 'EMPTY'}")
+print(f"AWS Config loaded - Bedrock Model: {aws_config.bedrock_model_id}")
 
 
 def get_aws_credentials() -> Dict[str, str]:
