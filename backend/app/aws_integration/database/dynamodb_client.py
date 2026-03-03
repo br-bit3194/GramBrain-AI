@@ -71,7 +71,7 @@ class DynamoDBClient:
             response = self.market_prices_table.query(
                 KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sk_start, sk_end),
                 FilterExpression=Attr('is_active').eq(True),
-                ScanIndexBackwards=True,  # Latest first
+                ScanIndexForward=False,  # False = descending order (latest first)
                 Limit=100
             )
             
@@ -186,7 +186,7 @@ class DynamoDBClient:
             
             response = self.analytics_table.query(
                 KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sk_start, sk_end),
-                ScanIndexBackwards=True,
+                ScanIndexForward=False,  # False = descending order (latest first)
                 Limit=30
             )
             

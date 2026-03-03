@@ -210,7 +210,7 @@ Synthesize these responses into a single, coherent answer in Hindi that:
 
 Provide only the synthesized response, no meta-commentary."""
             
-            synthesis = await bedrock_client.invoke_model(
+            synthesis = bedrock_client.invoke_model(
                 prompt=synthesis_prompt,
                 temperature=0.7
             )
