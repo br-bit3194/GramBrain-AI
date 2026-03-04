@@ -40,7 +40,8 @@ class AWSConfig(BaseSettings):
     aws_secret_access_key: str = ""
     
     # Bedrock Configuration
-    bedrock_model_id: str = "amazon.nova-lite-v1:0"
+    bedrock_model_id: str = "us.amazon.nova-lite-v1:0"
+    bedrock_vision_model_id: str = "us.amazon.nova-pro-v1:0"
     bedrock_temperature: float = 0.7
     bedrock_max_tokens: int = 4096
     
@@ -71,12 +72,6 @@ if os.getenv("AWS_SECRET_ACCESS_KEY"):
 if os.getenv("AWS_REGION"):
     os.environ["AWS_DEFAULT_REGION"] = aws_config.aws_region
 
-# Debug: Log if credentials are loaded
-print(f"AWS Config loaded - Region: {aws_config.aws_region}")
-print(f"AWS Config loaded - Access Key: {aws_config.aws_access_key_id[:10] + '...' if aws_config.aws_access_key_id else 'EMPTY'}")
-print(f"AWS Config loaded - Bedrock Model: {aws_config.bedrock_model_id}")
-
-
 def get_aws_credentials() -> Dict[str, str]:
     """Get AWS credentials for boto3"""
     return {
@@ -90,6 +85,7 @@ def get_bedrock_config() -> Dict[str, Any]:
     """Get Bedrock configuration"""
     return {
         "model_id": aws_config.bedrock_model_id,
+        "vision_model_id": aws_config.bedrock_vision_model_id,
         "temperature": aws_config.bedrock_temperature,
         "max_tokens": aws_config.bedrock_max_tokens
     }

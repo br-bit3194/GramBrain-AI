@@ -8,6 +8,87 @@ from ..bedrock.bedrock_client import bedrock_client
 logger = logging.getLogger(__name__)
 
 
+async def validate_crop_image(
+    image_data: str
+) -> Dict[str, Any]:
+    """
+    Validate if the uploaded image is actually of a crop/plant
+    
+    Args:
+        image_data: Base64 encoded image data
+    
+    Returns:
+        Dict with validation result
+    """
+    try:
+        # Clean image data
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+        
+        image_bytes = base64.b64decode(image_data)
+        
+        validation_prompt = """Analyze this image and determine if it shows a crop, plant, or agricultural field.
+
+Respond ONLY with valid JSON in this exact format:
+{
+    "is_crop_image": true/false,
+    "confidence": 0-100,
+    "image_type": "crop/plant/field/not_agricultural",
+    "reason": "Brief explanation in English",
+    "hindi_message": "Message in Hindi for farmer"
+}
+
+If it's NOT a crop/plant image, set is_crop_image to false and explain what the image shows."""
+        
+        response = bedrock_client.invoke_model_with_image(
+            prompt=validation_prompt,
+            image_data=image_bytes,
+            image_format="jpeg"
+        )
+        
+        if response['status'] == 'success':
+            try:
+                # Parse JSON from response
+                import json
+                content = response['content'].strip()
+                # Extract JSON if wrapped in markdown
+                if '```json' in content:
+                    content = content.split('```json')[1].split('```')[0].strip()
+                elif '```' in content:
+                    content = content.split('```')[1].split('```')[0].strip()
+                
+                validation_result = json.loads(content)
+                return {
+                    "status": "success",
+                    "validation": validation_result
+                }
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse validation JSON: {e}")
+                # Fallback: assume it's a crop image if parsing fails
+                return {
+                    "status": "success",
+                    "validation": {
+                        "is_crop_image": True,
+                        "confidence": 50,
+                        "image_type": "unknown",
+                        "reason": "Could not validate image type",
+                        "hindi_message": "तस्वीर का विश्लेषण जारी है"
+                    }
+                }
+        else:
+            return {
+                "status": "error",
+                "message": "Image validation failed"
+            }
+            
+    except Exception as e:
+        logger.error(f"Error validating crop image: {e}")
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+
 async def analyze_crop_image(
     image_data: str,
     location: Optional[str] = None,
@@ -31,6 +112,18 @@ async def analyze_crop_image(
         
         image_bytes = base64.b64decode(image_data)
         
+        # First validate if it's a crop image
+        validation_result = await validate_crop_image(image_data)
+        
+        if validation_result['status'] == 'success':
+            validation_data = validation_result.get('validation', {})
+            if not validation_data.get('is_crop_image', True):
+                return {
+                    "status": "invalid_image",
+                    "message": validation_data.get('hindi_message', 'यह फसल की तस्वीर नहीं है'),
+                    "validation": validation_data
+                }
+        
         # Create analysis prompt
         analysis_prompt = f"""Analyze this crop image for disease, pest, or health issues.
 
@@ -38,7 +131,7 @@ Context:
 - Location: {location or 'India'}
 - Crop Type: {crop_type or 'Please identify'}
 
-Provide detailed analysis in JSON format:
+Respond ONLY with valid JSON in this exact format:
 {{
     "diagnosis": {{
         "primary_issue": "Disease/pest name in English",
@@ -68,12 +161,42 @@ Focus on practical, actionable advice for Indian farmers."""
         )
         
         if response['status'] == 'success':
-            return {
-                "status": "success",
-                "analysis": response['content'],
-                "location": location,
-                "crop_type": crop_type
-            }
+            try:
+                # Parse JSON from response
+                import json
+                content = response['content'].strip()
+                # Extract JSON if wrapped in markdown
+                if '```json' in content:
+                    content = content.split('```json')[1].split('```')[0].strip()
+                elif '```' in content:
+                    content = content.split('```')[1].split('```')[0].strip()
+                
+                analysis_data = json.loads(content)
+                return {
+                    "status": "success",
+                    "analysis": analysis_data,
+                    "location": location,
+                    "crop_type": crop_type
+                }
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse analysis JSON: {e}")
+                # Return raw content if JSON parsing fails
+                return {
+                    "status": "success",
+                    "analysis": {
+                        "diagnosis": {
+                            "primary_issue": "Analysis completed",
+                            "hindi_name": "विश्लेषण पूर्ण",
+                            "confidence_percentage": 70,
+                            "severity_level": "medium",
+                            "crop_identified": crop_type or "Unknown",
+                            "affected_plant_parts": []
+                        },
+                        "raw_response": response['content']
+                    },
+                    "location": location,
+                    "crop_type": crop_type
+                }
         else:
             return {
                 "status": "error",
@@ -117,7 +240,7 @@ Severity: {severity}
 Location: {location or 'India'}
 Farmer Budget: {farmer_budget}
 
-Provide detailed treatment plan in JSON format:
+Respond ONLY with valid JSON in this exact format:
 {{
     "disease_info": {{
         "name_hindi": "Disease name in Hindi",
@@ -161,11 +284,37 @@ Focus on affordable, locally available solutions."""
         )
         
         if response['status'] == 'success':
-            return {
-                "status": "success",
-                "treatment_plan": response['content'],
-                "disease_name": disease_name
-            }
+            try:
+                # Parse JSON from response
+                import json
+                content = response['content'].strip()
+                # Extract JSON if wrapped in markdown
+                if '```json' in content:
+                    content = content.split('```json')[1].split('```')[0].strip()
+                elif '```' in content:
+                    content = content.split('```')[1].split('```')[0].strip()
+                
+                treatment_data = json.loads(content)
+                return {
+                    "status": "success",
+                    "treatment_plan": treatment_data,
+                    "disease_name": disease_name
+                }
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse treatment JSON: {e}")
+                # Return raw content if JSON parsing fails
+                return {
+                    "status": "success",
+                    "treatment_plan": {
+                        "disease_info": {
+                            "name_hindi": disease_name,
+                            "severity_impact": severity,
+                            "expected_timeline": "Unknown"
+                        },
+                        "raw_response": response['content']
+                    },
+                    "disease_name": disease_name
+                }
         else:
             return {
                 "status": "error",

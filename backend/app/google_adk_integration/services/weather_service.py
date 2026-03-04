@@ -14,15 +14,24 @@ class WeatherService:
         self.base_url = "http://api.openweathermap.org/data/2.5"
         self.timeout = 10.0
 
-    async def get_current_weather(self, location: str) -> Dict[str, Any]:
-        """Fetch current weather for a given location"""
+    async def get_current_weather(self, location) -> Dict[str, Any]:
+        """Fetch current weather for a given location (city name or coordinates dict)"""
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 params = {
-                    'q': location,
                     'appid': self.api_key,
                     'units': 'metric'
                 }
+                
+                # Handle both string location and coordinate dict
+                if isinstance(location, dict) and 'latitude' in location and 'longitude' in location:
+                    params['lat'] = location['latitude']
+                    params['lon'] = location['longitude']
+                elif isinstance(location, str):
+                    params['q'] = location
+                else:
+                    return {"status": "error", "message": "Invalid location format"}
+                
                 response = await client.get(f"{self.base_url}/weather", params=params)
                 response.raise_for_status()
                 data = response.json()
@@ -35,16 +44,25 @@ class WeatherService:
             logger.error(f"Error fetching weather for {location}: {e}")
             return {"status": "error", "message": "Failed to fetch current weather"}
 
-    async def get_forecast(self, location: str, days: int = 5) -> Dict[str, Any]:
-        """Fetch weather forecast for the next `days` days"""
+    async def get_forecast(self, location, days: int = 5) -> Dict[str, Any]:
+        """Fetch weather forecast for the next `days` days (city name or coordinates dict)"""
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 params = {
-                    'q': location,
                     'appid': self.api_key,
                     'units': 'metric',
                     'cnt': min(days * 8, 40)  # OpenWeatherMap returns up to 40 intervals
                 }
+                
+                # Handle both string location and coordinate dict
+                if isinstance(location, dict) and 'latitude' in location and 'longitude' in location:
+                    params['lat'] = location['latitude']
+                    params['lon'] = location['longitude']
+                elif isinstance(location, str):
+                    params['q'] = location
+                else:
+                    return {"status": "error", "message": "Invalid location format"}
+                
                 response = await client.get(f"{self.base_url}/forecast", params=params)
                 response.raise_for_status()
                 data = response.json()

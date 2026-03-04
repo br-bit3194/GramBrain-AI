@@ -115,59 +115,109 @@ class BedrockClient:
         image_format: str = "jpeg",
         system_prompt: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Invoke Bedrock model with image (Claude Vision)"""
+        """Invoke Bedrock model with image (supports both Nova and Claude)"""
         try:
             import base64
+            
+            # Use vision model for image analysis
+            vision_model_id = self.config.get('vision_model_id', 'us.amazon.nova-pro-v1:0')
             
             # Encode image to base64
             image_base64 = base64.b64encode(image_data).decode('utf-8')
             
-            # Prepare messages with image
-            messages = [
-                {
-                    "role": "user",
-                    "content": [
+            # Check if it's a Nova model
+            if 'nova' in vision_model_id.lower():
+                # Nova API format for vision
+                body = {
+                    "messages": [
                         {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": f"image/{image_format}",
-                                "data": image_base64
-                            }
-                        },
-                        {
-                            "type": "text",
-                            "text": prompt
+                            "role": "user",
+                            "content": [
+                                {
+                                    "image": {
+                                        "format": image_format,
+                                        "source": {
+                                            "bytes": image_base64
+                                        }
+                                    }
+                                },
+                                {
+                                    "text": prompt
+                                }
+                            ]
                         }
-                    ]
+                    ],
+                    "inferenceConfig": {
+                        "temperature": self.config['temperature'],
+                        "max_new_tokens": self.config['max_tokens']
+                    }
                 }
-            ]
-            
-            # Prepare request body
-            body = {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": self.config['max_tokens'],
-                "temperature": self.config['temperature'],
-                "messages": messages
-            }
-            
-            if system_prompt:
-                body["system"] = system_prompt
-            
-            # Invoke model
-            response = self.bedrock_runtime.invoke_model(
-                modelId=self.config['model_id'],
-                body=json.dumps(body)
-            )
-            
-            # Parse response
-            response_body = json.loads(response['body'].read())
+                
+                if system_prompt:
+                    body["system"] = [{"text": system_prompt}]
+                
+                # Invoke model
+                response = self.bedrock_runtime.invoke_model(
+                    modelId=vision_model_id,
+                    body=json.dumps(body)
+                )
+                
+                # Parse Nova response
+                response_body = json.loads(response['body'].read())
+                content = response_body['output']['message']['content'][0]['text']
+                stop_reason = response_body.get('stopReason')
+                usage = response_body.get('usage', {})
+                
+            else:
+                # Claude API format for vision
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": f"image/{image_format}",
+                                    "data": image_base64
+                                }
+                            },
+                            {
+                                "type": "text",
+                                "text": prompt
+                            }
+                        ]
+                    }
+                ]
+                
+                body = {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": self.config['max_tokens'],
+                    "temperature": self.config['temperature'],
+                    "messages": messages
+                }
+                
+                if system_prompt:
+                    body["system"] = system_prompt
+                
+                # Invoke model
+                response = self.bedrock_runtime.invoke_model(
+                    modelId=vision_model_id,
+                    body=json.dumps(body)
+                )
+                
+                # Parse Claude response
+                response_body = json.loads(response['body'].read())
+                content = response_body['content'][0]['text']
+                stop_reason = response_body.get('stop_reason')
+                usage = response_body.get('usage', {})
             
             return {
                 "status": "success",
-                "content": response_body['content'][0]['text'],
-                "stop_reason": response_body.get('stop_reason'),
-                "usage": response_body.get('usage', {})
+                "content": content,
+                "stop_reason": stop_reason,
+                "usage": usage,
+                "model_used": vision_model_id
             }
             
         except Exception as e:

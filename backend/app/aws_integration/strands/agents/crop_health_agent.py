@@ -2,7 +2,7 @@
 from typing import Dict, Any
 import logging
 from ..base_agent import BaseAgent
-from ...tools.crop_health_tools import analyze_crop_image, get_disease_treatment_info
+from ...tools.crop_health_tools import analyze_crop_image, get_disease_treatment_info, validate_crop_image
 
 logger = logging.getLogger(__name__)
 
@@ -17,15 +17,16 @@ class CropHealthAgent(BaseAgent):
             instruction="""You are an expert agricultural pathologist specializing in crop disease diagnosis for Indian farmers.
 
 Your responsibilities:
-1. Analyze crop images using AI vision
-2. Identify diseases, pests, and nutrient deficiencies
-3. Provide immediate treatment recommendations
-4. Suggest locally available medicines and remedies
-5. Offer preventive measures
+1. Validate uploaded images are of crops/plants
+2. Analyze crop images using AI vision
+3. Identify diseases, pests, and nutrient deficiencies
+4. Provide immediate treatment recommendations
+5. Suggest locally available medicines and remedies
+6. Offer preventive measures
 
 Always respond in Hindi with practical, affordable solutions.
 Prioritize treatments available in local agricultural stores.""",
-            tools=[analyze_crop_image, get_disease_treatment_info]
+            tools=[validate_crop_image, analyze_crop_image, get_disease_treatment_info]
         )
     
     async def process(self, message: str, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -50,14 +51,32 @@ Prioritize treatments available in local agricultural stores.""",
                 diagnosis_data['analysis'] = analysis_result
                 tools_called.append('analyze_crop_image')
                 
+                # Check if image validation failed
+                if analysis_result.get('status') == 'invalid_image':
+                    validation = analysis_result.get('validation', {})
+                    return {
+                        "status": "invalid_image",
+                        "response": validation.get('hindi_message', 'यह फसल की तस्वीर नहीं है। कृपया फसल/पौधे की तस्वीर भेजें।'),
+                        "tools_called": tools_called,
+                        "data": diagnosis_data
+                    }
+                
                 # If disease identified, get treatment info
                 if analysis_result.get('status') == 'success':
                     analysis = analysis_result.get('analysis', {})
-                    diagnosis = analysis.get('diagnosis', {})
-                    disease_name = diagnosis.get('primary_issue', '')
-                    severity = diagnosis.get('severity_level', 'medium')
                     
-                    if disease_name:
+                    # Handle both dict and string responses
+                    if isinstance(analysis, dict):
+                        diagnosis = analysis.get('diagnosis', {})
+                        disease_name = diagnosis.get('primary_issue', '')
+                        severity = diagnosis.get('severity_level', 'medium')
+                    else:
+                        # Fallback if analysis is a string
+                        disease_name = ''
+                        severity = 'medium'
+                        logger.warning(f"Analysis returned as string: {str(analysis)[:100]}")
+                    
+                    if disease_name and disease_name != 'Analysis completed':
                         treatment_result = await self.invoke_tool(
                             'get_disease_treatment_info',
                             disease_name=disease_name,
@@ -106,7 +125,7 @@ Use simple Hindi that farmers can understand."""
             }
             
         except Exception as e:
-            logger.error(f"Error in crop health agent: {e}")
+            logger.error(f"Error in crop health agent: {e}", exc_info=True)
             return {
                 "status": "error",
                 "response": "मुझे खेद है, फसल विश्लेषण में समस्या हुई। कृपया दोबारा कोशिश करें।",
