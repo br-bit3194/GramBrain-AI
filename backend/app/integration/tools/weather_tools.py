@@ -1,4 +1,4 @@
-# app/aws_integration/tools/weather_tools.py
+# app/integration/tools/weather_tools.py
 """Weather tools for AWS integration - independent weather service"""
 from typing import Dict, Any
 import os

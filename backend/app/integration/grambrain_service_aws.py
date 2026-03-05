@@ -1,4 +1,4 @@
-# app/aws_integration/grambrain_service_aws.py
+# app/integration/grambrain_service_aws.py
 """
 GramBrain Service using AWS Stack:
 - AWS Bedrock (Claude) for LLM

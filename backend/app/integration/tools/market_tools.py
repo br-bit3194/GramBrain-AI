@@ -1,4 +1,4 @@
-# app/aws_integration/tools/market_tools.py
+# app/integration/tools/market_tools.py
 """Market tools using DynamoDB for data storage"""
 from typing import Dict, Any, Optional
 import logging

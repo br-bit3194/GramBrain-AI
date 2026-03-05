@@ -1,4 +1,4 @@
-# app/aws_integration/strands/base_agent.py
+# app/integration/strands/base_agent.py
 from typing import Dict, Any, List, Optional, Callable
 from abc import ABC, abstractmethod
 import logging

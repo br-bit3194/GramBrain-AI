@@ -1,4 +1,4 @@
-# app/aws_integration/tools/crop_health_tools.py
+# app/integration/tools/crop_health_tools.py
 """Crop health tools using AWS Bedrock for image analysis"""
 from typing import Dict, Any, Optional
 import logging

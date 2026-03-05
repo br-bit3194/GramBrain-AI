@@ -1,4 +1,4 @@
-# app/aws_integration/strands/agents/government_schemes_agent.py
+# app/integration/strands/agents/government_schemes_agent.py
 from typing import Dict, Any
 import logging
 from ..base_agent import BaseAgent

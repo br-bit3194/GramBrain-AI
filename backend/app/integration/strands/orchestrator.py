@@ -1,4 +1,4 @@
-# app/aws_integration/strands/orchestrator.py
+# app/integration/strands/orchestrator.py
 from typing import Dict, Any, List, Optional
 import logging
 import json

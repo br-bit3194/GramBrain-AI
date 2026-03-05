@@ -1,4 +1,4 @@
-# app/aws_integration/services/weather_service.py
+# app/integration/services/weather_service.py
 """
 Independent Weather Service for AWS Integration
 Uses OpenWeatherMap API for real-time weather data

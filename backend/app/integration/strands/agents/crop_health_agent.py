@@ -1,4 +1,4 @@
-# app/aws_integration/strands/agents/crop_health_agent.py
+# app/integration/strands/agents/crop_health_agent.py
 from typing import Dict, Any
 import logging
 from ..base_agent import BaseAgent

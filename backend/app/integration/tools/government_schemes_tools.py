@@ -1,4 +1,4 @@
-# app/aws_integration/tools/government_schemes_tools.py
+# app/integration/tools/government_schemes_tools.py
 """Government schemes tools using AWS Bedrock for AI-powered assistance"""
 from typing import Dict, Any, Optional
 import logging

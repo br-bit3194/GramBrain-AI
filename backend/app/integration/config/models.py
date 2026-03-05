@@ -1,4 +1,4 @@
-# app/aws_integration/config/models.py
+# app/integration/config/models.py
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, List, Any
 from datetime import datetime

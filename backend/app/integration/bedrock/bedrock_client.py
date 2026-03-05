@@ -1,4 +1,4 @@
-# app/aws_integration/bedrock/bedrock_client.py
+# app/integration/bedrock/bedrock_client.py
 import boto3
 import json
 import logging

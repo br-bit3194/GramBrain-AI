@@ -1,4 +1,4 @@
-# app/aws_integration/database/dynamodb_client.py
+# app/integration/database/dynamodb_client.py
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from boto3.dynamodb.types import TypeSerializer

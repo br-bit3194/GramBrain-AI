@@ -1,4 +1,4 @@
-# app/aws_integration/config/aws_config.py
+# app/integration/config/aws_config.py
 from typing import Dict, Any
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
