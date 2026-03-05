@@ -1,4 +1,4 @@
-# GramBrain - AWS Stack Version 🌾
+# GramBrain - AI Agricultural Assistant 🌾
 
 <div align="center">
 
@@ -9,13 +9,13 @@
 
 </div>
 
-AI-powered agricultural assistant for Indian farmers, now powered by AWS Bedrock and DynamoDB with Strands multi-agent framework.
+AI-powered agricultural assistant for Indian farmers, powered by AWS Bedrock and DynamoDB with Strands multi-agent framework.
 
 ---
 
-## 🚀 What's New in AWS Version
+## 🚀 Technology Stack
 
-### AWS Stack Components
+### Core Components
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
@@ -25,7 +25,7 @@ AI-powered agricultural assistant for Indian farmers, now powered by AWS Bedrock
 | **🖼️ Vision** | Claude Vision (Bedrock) | Crop disease diagnosis |
 | **📊 Sessions** | DynamoDB | Distributed session management |
 
-### Key Improvements
+### Key Features
 
 ✅ **Scalability**: DynamoDB auto-scales with demand  
 ✅ **Performance**: Amazon Nova lite for better responses  
@@ -88,8 +88,7 @@ cd Project-Kisan
 ### 2. Install Dependencies
 
 ```bash
-# Install AWS-specific requirements
-pip install -r requirements-aws.txt
+pip install -r requirements.txt
 ```
 
 ### 3. Configure Environment
@@ -123,7 +122,7 @@ MANDI_API_KEY=your_data_gov_api_key_optional
 ```bash
 # Tables will be created automatically on first run
 # Or create manually:
-python -c "from backend.app.aws_integration.database.dynamodb_client import dynamodb_client; dynamodb_client.create_tables()"
+python -c "from backend.app.integration.database.dynamodb_client import dynamodb_client; dynamodb_client.create_tables()"
 ```
 
 ---
@@ -133,13 +132,13 @@ python -c "from backend.app.aws_integration.database.dynamodb_client import dyna
 ### Development Mode
 
 ```bash
-python -m uvicorn backend.app.main_aws:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Production Mode
 
 ```bash
-gunicorn backend.app.main_aws:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+gunicorn backend.app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```
 
 ### Access Application
@@ -153,13 +152,13 @@ Open browser: `http://localhost:8000`
 ```
 ┌─────────────────────────────────────────┐
 │         FastAPI Application             │
-│           (main_aws.py)                 │
+│              (main.py)                  │
 └──────────────┬──────────────────────────┘
                │
                ▼
 ┌─────────────────────────────────────────┐
-│      FarmBot Service AWS                │
-│    (farmbot_service_aws.py)             │
+│      GramBrain Service                  │
+│    (grambrain_service_aws.py)           │
 └──────────────┬──────────────────────────┘
                │
                ▼
@@ -257,7 +256,7 @@ Attributes: statistics, trends, predictions
 ### Test Bedrock Connection
 
 ```python
-from backend.app.aws_integration.bedrock.bedrock_client import bedrock_client
+from backend.app.integration.bedrock.bedrock_client import bedrock_client
 
 response = bedrock_client.invoke_model(
     prompt="Hello, how are you?",
@@ -269,7 +268,7 @@ print(response)
 ### Test DynamoDB
 
 ```python
-from backend.app.aws_integration.database.dynamodb_client import dynamodb_client
+from backend.app.integration.database.dynamodb_client import dynamodb_client
 
 # Create tables
 dynamodb_client.create_tables()
