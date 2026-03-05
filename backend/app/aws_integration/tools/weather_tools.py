@@ -1,12 +1,8 @@
 # app/aws_integration/tools/weather_tools.py
-"""Weather tools for AWS integration - reusing existing weather service"""
+"""Weather tools for AWS integration - independent weather service"""
 from typing import Dict, Any
 import os
-import sys
-
-# Import from existing services
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from google_adk_integration.services.weather_service import WeatherService
+from ..services.weather_service import WeatherService
 
 # Initialize weather service
 weather_service = WeatherService(api_key=os.environ.get("WEATHER_API_KEY", ""))
