@@ -141,6 +141,28 @@ python -m uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 gunicorn backend.app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```
 
+### Docker
+
+```bash
+# Build the Docker image
+docker build -t grambrain-app .
+
+# Run the container
+docker run -p 8000:8000 grambrain-app
+
+# Run in detached mode (background)
+docker run -d -p 8000:8000 --name grambrain grambrain-app
+
+# View logs
+docker logs -f grambrain
+
+# Stop the container
+docker stop grambrain
+
+# Connect to running container
+docker exec -it grambrain bash
+```
+
 ### Access Application
 
 Open browser: `http://localhost:8000`
