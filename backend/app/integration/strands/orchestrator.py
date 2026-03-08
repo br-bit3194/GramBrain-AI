@@ -84,6 +84,24 @@ class StrandsOrchestrator:
                     "type": "single",
                     "agent": "crop_health_specialist"
                 }
+
+            # If the previous interaction was with the market agent, and the user
+            # is now just providing a crop/commodity name (or short follow-up),
+            # keep routing to market_specialist to avoid the system mistakenly
+            # switching to crop health analysis.
+            last_agent = context.get('last_agent_used')
+            if last_agent == 'market_specialist':
+                commodity_terms = [
+                    'प्याज', 'टमाटर', 'आलू', 'गेहूं', 'चावल', 'धान', 'मक्का', 'सोयाबीन',
+                    'onion', 'tomato', 'potato', 'wheat', 'rice', 'paddy', 'maize', 'soybean'
+                ]
+                message_lower = message.lower().strip()
+                # If the message is short and mentions a known commodity, keep using market agent
+                if len(message_lower.split()) <= 3 and any(term in message_lower for term in commodity_terms):
+                    return {
+                        "type": "single",
+                        "agent": "market_specialist"
+                    }
             
             # Build routing prompt
             agent_descriptions = "\n".join([
