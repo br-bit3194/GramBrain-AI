@@ -54,9 +54,11 @@ class DynamoDBClient:
             return False
     
     def get_market_prices_by_commodity(
-        self, 
-        commodity: str, 
-        days_back: int = 7
+        self,
+        commodity: str,
+        days_back: int = 7,
+        state: Optional[str] = None,
+        district: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Get market prices for a commodity"""
         try:
@@ -68,9 +70,16 @@ class DynamoDBClient:
             sk_start = f"DATE#{start_date.strftime('%Y-%m-%d')}"
             sk_end = f"DATE#{end_date.strftime('%Y-%m-%d')}#ZZZZ"
             
+            # Filter: allow missing is_active (default to active) and optionally filter by location
+            filter_expr = Attr('is_active').not_exists() | Attr('is_active').eq(True)
+            if state:
+                filter_expr = filter_expr & Attr('state').eq(state)
+            if district:
+                filter_expr = filter_expr & Attr('district').eq(district)
+            
             response = self.market_prices_table.query(
                 KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sk_start, sk_end),
-                FilterExpression=Attr('is_active').eq(True),
+                FilterExpression=filter_expr,
                 ScanIndexForward=False,  # False = descending order (latest first)
                 Limit=100
             )
@@ -91,6 +100,43 @@ class DynamoDBClient:
         except Exception as e:
             logger.error(f"Error batch writing prices: {e}")
             return 0
+
+    # ============================================================================
+    # Market Summary Operations
+    # ============================================================================
+
+    def put_market_summary(self, summary: Dict[str, Any]) -> bool:
+        """Store a market summary object in the market prices table."""
+        try:
+            item = {
+                'pk': 'SUMMARY#market',
+                'sk': 'METADATA',
+                'summary': summary,
+                'updated_at': datetime.now().isoformat()
+            }
+            item = convert_floats_to_decimals(item)
+            self.market_prices_table.put_item(Item=item)
+            return True
+        except Exception as e:
+            logger.error(f"Error putting market summary: {e}")
+            return False
+
+    def get_market_summary(self) -> Optional[Dict[str, Any]]:
+        """Retrieve the cached market summary from DynamoDB."""
+        try:
+            response = self.market_prices_table.get_item(
+                Key={
+                    'pk': 'SUMMARY#market',
+                    'sk': 'METADATA'
+                }
+            )
+            item = response.get('Item')
+            if not item:
+                return None
+            return item.get('summary')
+        except Exception as e:
+            logger.error(f"Error getting market summary: {e}")
+            return None
     
     # ============================================================================
     # Session Operations

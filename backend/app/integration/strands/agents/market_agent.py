@@ -43,8 +43,10 @@ Focus on helping farmers get the best prices for their produce.""",
                     "tools_called": []
                 }
             
-            # Extract location if available
+            # Extract location if available (expect a string like state name)
             state = context.get('user_location')
+            if not isinstance(state, str):
+                state = None
             
             # Determine query type
             needs_analysis = any(word in message.lower() for word in [
@@ -83,7 +85,8 @@ Focus on helping farmers get the best prices for their produce.""",
                     'get_selling_advice',
                     commodity=commodity,
                     quality_grade='medium',
-                    urgency='normal'
+                    urgency='normal',
+                    state=state
                 )
                 market_data['selling_advice'] = advice_result
                 tools_called.append('get_selling_advice')

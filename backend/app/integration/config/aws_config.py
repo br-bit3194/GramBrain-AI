@@ -54,6 +54,7 @@ class AWSConfig(BaseSettings):
     weather_api_key: str = ""
     elevenlabs_api_key: str = ""
     mandi_api_key: str = ""
+    mandi_api_url: str = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
     
     model_config = SettingsConfigDict(
         case_sensitive=False,

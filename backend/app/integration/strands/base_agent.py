@@ -6,7 +6,6 @@ from ..bedrock.bedrock_client import bedrock_client
 
 logger = logging.getLogger(__name__)
 
-
 class BaseAgent(ABC):
     """Base class for all Strands agents"""
     
@@ -47,15 +46,17 @@ class BaseAgent(ABC):
             )
             
             if response['status'] == 'success':
-                return response['content']
+                result = response['content']
+                return result
             else:
                 logger.error(f"LLM invocation failed: {response.get('message')}")
-                return "मुझे खेद है, मैं अभी आपकी मदद करने में असमर्थ हूं।"
+                result = "मुझे खेद है, मैं अभी आपकी मदद करने में असमर्थ हूं।"
+                return result
                 
         except Exception as e:
             logger.error(f"Error invoking LLM: {e}")
             return "मुझे खेद है, एक त्रुटि हुई है।"
-    
+
     async def invoke_tool(self, tool_name: str, **kwargs) -> Any:
         """Invoke a tool by name"""
         try:

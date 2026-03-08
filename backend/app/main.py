@@ -14,6 +14,7 @@ import logging
 
 from .integration.grambrain_service_aws import grambrain_service_aws
 from .integration.config.aws_config import aws_config
+from .integration.tools.market_tools import get_market_summary, _fetch_mandi_prices
 from .websocket_conn import ConnectionManager
 
 # Configure logging
@@ -60,10 +61,94 @@ async def startup_event():
 async def home(request: Request):
     """Home page"""
     try:
+        market_preview = []
+        try:
+            # Attempt to show live market data (via mandi API) for the ticker
+            mandi_data = _fetch_mandi_prices(days=1)
+            records = mandi_data.get("records", [])
+
+            # Filter out invalid or zero-price records
+            records = [r for r in records if r.get("modal_price") and float(r.get("modal_price", 0)) > 0]
+
+            # Focus on common vegetables for farmers
+            veg_keywords = [
+                'potato', 'tomato', 'onion', 'brinjal', 'capsicum', 'beans', 'cabbage',
+                'cauliflower', 'carrot', 'radish', 'chilli', 'lady finger', 'okra', 'palak',
+                'spinach', 'leaves', 'greens'
+            ]
+
+            def is_vegetable(commodity: str) -> bool:
+                if not commodity:
+                    return False
+                c = commodity.lower()
+                return any(k in c for k in veg_keywords)
+
+            veg_records = [r for r in records if is_vegetable(r.get("commodity", ""))]
+
+            # Group by commodity and show latest price for each
+            grouped = {}
+            for rec in veg_records:
+                com = (rec.get("commodity") or "").strip()
+                if not com:
+                    continue
+                # Pick the latest record by date (string in DD/MM/YYYY or similar)
+                existing = grouped.get(com)
+                if not existing:
+                    grouped[com] = rec
+                    continue
+
+                def parse_date(d):
+                    try:
+                        parts = d.split('/')
+                        if len(parts) == 3:
+                            return datetime(int(parts[2]), int(parts[1]), int(parts[0]))
+                    except Exception:
+                        pass
+                    return datetime.min
+
+                current_date = parse_date(rec.get("arrival_date", ""))
+                existing_date = parse_date(existing.get("arrival_date", ""))
+                if current_date >= existing_date:
+                    grouped[com] = rec
+
+            # Build ticker preview (max 5 items)
+            market_preview = []
+            for com, rec in list(grouped.items())[:5]:
+                trend_raw = str(rec.get("trend") or "").lower()
+                price_change = 0
+                if "up" in trend_raw or "increase" in trend_raw or "high" in trend_raw:
+                    price_change = 1
+                elif "down" in trend_raw or "decrease" in trend_raw or "low" in trend_raw:
+                    price_change = -1
+
+                market_preview.append({
+                    "crop_name": com,
+                    "current_price": rec.get("modal_price"),
+                    "price_change": price_change,
+                    "market_location": rec.get("market") or rec.get("state") or ""
+                })
+
+            # If still empty, fall back to cached summary
+            if not market_preview:
+                summary = await get_market_summary(force_refresh=False)
+                if summary.get("status") == "success":
+                    top_markets = summary.get("summary", {}).get("top_markets", [])
+                    market_preview = [
+                        {
+                            "crop_name": "मंडी भाव",
+                            "current_price": "---",
+                            "price_change": 0,
+                            "market_location": m
+                        }
+                        for m in top_markets[:5]
+                    ]
+        except Exception as e:
+            logger.warning(f"Failed to load market preview: {e}")
+
         context = {
             "request": request,
             "page_title": "GramBrain - AI Agricultural Assistant",
-            "market_preview": [],  # Can be populated from DynamoDB
+            "market_preview": market_preview,
             "enhanced_features_enabled": True,
             "websocket_enabled": True,
             "ai_crop_diagnosis": True,
@@ -231,6 +316,19 @@ async def get_session_analytics(session_id: str):
         return {
             "error": f"Analytics not available: {str(e)}",
             "session_id": session_id
+        }
+
+@app.get("/api/mandi/summary")
+async def get_market_summary_endpoint(force_refresh: bool = False):
+    """Get market data summary (cached via DynamoDB, with live mandi API fallback)."""
+    try:
+        result = await get_market_summary(days_back=1, force_refresh=force_refresh)
+        return result
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
         }
 
 

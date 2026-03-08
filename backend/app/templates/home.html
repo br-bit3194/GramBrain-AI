@@ -160,7 +160,7 @@
 
         .ticker-content {
             display: flex;
-            animation: tickerScroll 30s linear infinite;
+            animation: tickerScroll var(--ticker-duration, 30s) linear infinite;
         }
 
         .ticker-item {
@@ -204,7 +204,7 @@
 
         @keyframes tickerScroll {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            100% { transform: translateX(-100%); }
         }
 
         /* Main Layout */
@@ -875,9 +875,11 @@
                         <div class="ticker-item">
                             <span class="crop-name">{{ item.crop_name }}</span>
                             <span class="price">₹{{ item.current_price }}</span>
+                            {% if item.price_change %}
                             <span class="change {{ 'up' if item.price_change > 0 else 'down' if item.price_change < 0 else '' }}">
                                 {{ '↑' if item.price_change > 0 else '↓' if item.price_change < 0 else '→' }} ₹{{ item.price_change }}
                             </span>
+                            {% endif %}
                             <span class="location">{{ item.market_location }}</span>
                         </div>
                         {% endfor %}
@@ -1783,6 +1785,69 @@
             }, 1000);
         }
 
+        // Load Mandi ticker data from API and render in the ticker
+        async function loadMandiTickerData(forceRefresh = false) {
+            try {
+                const endpoint = `/api/mandi/summary${forceRefresh ? '?force_refresh=true' : ''}`;
+                const response = await fetch(endpoint);
+                const data = await response.json();
+
+                const summary = data.summary || {};
+                const commodities = Array.isArray(summary.top_commodities) ? summary.top_commodities : [];
+                const total = summary.total_records || 0;
+                const unique = summary.unique_commodities || 0;
+
+                // If we got no useful data, try forcing a refresh once.
+                if (data.status === 'success' && (unique === 0 || commodities.length === 0) && !forceRefresh) {
+                    console.warn('Ticker summary empty; retrying with force_refresh');
+                    return loadMandiTickerData(true);
+                }
+
+                if (data.status === 'success' && commodities.length > 0) {
+                    const items = commodities.slice(0, 20);
+                    const durationSeconds = Math.max(20, items.length * 2);
+                    mandiTicker.style.setProperty('--ticker-duration', `${durationSeconds}s`);
+                    let tickerHTML = '';
+
+                    items.forEach(item => {
+                        const change = item.price_change || 0;
+                        const changeClass = change > 0 ? 'up' : change < 0 ? 'down' : '';
+                        const changeSymbol = change > 0 ? '↑' : change < 0 ? '↓' : '';
+
+                        tickerHTML += `
+                            <div class="ticker-item">
+                                <span class="crop-name">${item.commodity}</span>
+                                <span class="price">₹${item.avg_price}</span>
+                                ${change !== 0 ? `<span class="change ${changeClass}">${changeSymbol} ₹${Math.abs(change)}</span>` : ''}
+                                <span class="location">${item.top_market || ''}</span>
+                            </div>
+                        `;
+                    });
+
+                    tickerHTML += `
+                        <div class="ticker-item">
+                            <span class="crop-name">📊 रिकॉर्ड</span>
+                            <span class="price">${total}</span>
+                            <span class="location">${unique} फसलें</span>
+                        </div>
+                    `;
+
+                    mandiTicker.innerHTML = tickerHTML;
+                    mandiTicker.innerHTML = tickerHTML + tickerHTML;
+                    return;
+                }
+
+                // Fallback: keep existing content and duplicate for scrolling
+                const tickerItems = mandiTicker.innerHTML;
+                mandiTicker.innerHTML = tickerItems + tickerItems;
+
+            } catch (error) {
+                console.error('❌ Error loading mandi ticker data:', error);
+                const tickerItems = mandiTicker.innerHTML;
+                mandiTicker.innerHTML = tickerItems + tickerItems;
+            }
+        }
+
         // Image Upload with Voice (enhanced)
         function handleImageUpload(event) {
             const file = event.target.files[0];
@@ -1868,9 +1933,8 @@
                     }
                 });
 
-                // Duplicate ticker items for seamless looping
-                const tickerItems = mandiTicker.innerHTML;
-                mandiTicker.innerHTML = tickerItems + tickerItems;
+                // Load ticker data from API and start marquee animation
+                loadMandiTickerData().catch(err => console.error('Ticker load error:', err));
 
                 console.log('App initialized with ElevenLabs voice support');
             };
