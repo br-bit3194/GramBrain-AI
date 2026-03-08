@@ -5,11 +5,26 @@ import logging
 from datetime import datetime, timedelta
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from ..config.aws_config import aws_config
 from ..database.dynamodb_client import dynamodb_client
 
 logger = logging.getLogger(__name__)
+
+# Use a global session to enable connection pooling across requests/workers.
+# This reduces TCP connection churn when the app makes frequent API calls.
+REQUESTS_SESSION = requests.Session()
+RETRY_STRATEGY = Retry(
+    total=3,
+    backoff_factor=1,
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["GET"],
+    raise_on_status=False,
+)
+REQUESTS_SESSION.mount("https://", HTTPAdapter(max_retries=RETRY_STRATEGY))
+REQUESTS_SESSION.mount("http://", HTTPAdapter(max_retries=RETRY_STRATEGY))
 
 
 def _fetch_mandi_prices(
@@ -41,7 +56,47 @@ def _fetch_mandi_prices(
         if district:
             params["filters[district]"] = district
 
-        resp = requests.get(aws_config.mandi_api_url, params=params, timeout=10)
+        # Avoid logging api-key directly
+        params_to_log = {k: v for k, v in params.items() if k != "api-key"}
+        logger.debug(
+            "Fetching mandi prices",
+            extra={
+                "mandi_url": aws_config.mandi_api_url,
+                "params": params_to_log,
+                "commodity": commodity,
+                "state": state,
+                "district": district,
+                "days": days,
+            },
+        )
+
+        resp = REQUESTS_SESSION.get(
+            aws_config.mandi_api_url,
+            params=params,
+            headers={"Accept": "application/json", "User-Agent": "grambrain/1.0"},
+            timeout=10,
+        )
+
+        logger.debug(
+            "Mandi API response",
+            extra={
+                "status_code": resp.status_code,
+                "elapsed_s": resp.elapsed.total_seconds(),
+            },
+        )
+
+        if resp.status_code != 200:
+            body = resp.text
+            if len(body) > 500:
+                body = body[:500] + "...[truncated]"
+            logger.warning(
+                "Mandi API returned non-200 status",
+                extra={
+                    "status_code": resp.status_code,
+                    "body": body,
+                },
+            )
+
         resp.raise_for_status()
         data = resp.json()
 
@@ -87,7 +142,7 @@ def _fetch_mandi_prices(
 
         return {"records": results, "error": None}
     except Exception as e:
-        logger.error(f"Error fetching mandi API prices: {e}")
+        logger.exception("Error fetching mandi API prices")
         return {"records": [], "error": str(e)}
 
 
