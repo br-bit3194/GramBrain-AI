@@ -3,7 +3,7 @@
 # ============================================================================
 import logging
 from typing import Dict, Any, Optional
-from app.google_adk_integration.aws_services import BedrockService
+from app.aws_adk_integration.aws_services import BedrockService
 
 logger = logging.getLogger(__name__)
 

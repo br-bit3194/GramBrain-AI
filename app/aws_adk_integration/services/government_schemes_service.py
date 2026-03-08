@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize Bedrock service
 try:
-    from app.google_adk_integration.aws_services import BedrockService
+    from app.aws_adk_integration.aws_services import BedrockService
     bedrock_service = BedrockService()
     logger.info("✅ AWS Bedrock service initialized for Government Schemes")
 except Exception as e:

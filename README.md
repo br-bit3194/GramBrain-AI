@@ -1,24 +1,10 @@
-# Project Kisan 🌾 - Providing farmers with expert help on demand
+# GramBrain AI 🌾 - Providing farmers with expert help on demand
 
-<div align="center">
-
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Try_Now-brightgreen?style=for-the-badge)](https://app-975609603775.us-central1.run.app/)
-[![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-Modern-green?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Google AI](https://img.shields.io/badge/Google_AI-Gemini-orange?style=for-the-badge&logo=google)](https://ai.google.dev)
-[![ElevenLabs](https://img.shields.io/badge/ElevenLabs-Voice_AI-purple?style=for-the-badge)](https://elevenlabs.io)
-
-</div>
-
-Project Kisan is a voice-first, multilingual AI assistant for small-scale farmers. Powered by Google AI technologies and the Gemini model, it delivers crop disease diagnosis, real-time market insights, and government scheme guidance via natural voice in local languages, working even in low-network regions.
+GramBrain AI  is a voice-first, multilingual AI assistant for small-scale farmers. Powered by AWS technologies and the AWS Bedrock model, it delivers crop disease diagnosis, real-time market insights, and government scheme guidance via natural voice in local languages, working even in low-network regions.
 
 ---
 
 ## 🎯 **Major Challenges Faced by Indian Farmers**
-
-<div align="center">
-<img width="600" height="308" alt="Challenges faced by Indian Farmers" src="https://github.com/user-attachments/assets/1fc260af-1a48-42a3-9645-e5d856947065" />
-</div>
 
 Indian farmers face multiple interconnected challenges that affect their productivity and income:
 - **Limited access to expert agricultural advice**
@@ -33,40 +19,12 @@ Indian farmers face multiple interconnected challenges that affect their product
 
 ## 💡 **Our Solution**
 
-<div align="center">
-<img width="556" height="316" alt="Project Kisan Solution" src="https://github.com/user-attachments/assets/67b3e1fa-8dff-4097-9d49-95334b0c3ca1" />
-</div>
-
-Project Kisan addresses these challenges through:
+GramBrain AI addresses these challenges through:
 - **AI-powered agricultural expertise** available 24/7
 - **Voice-first interface** in multiple Indian languages
 - **Real-time data integration** from government sources
 - **Offline capabilities** for low-connectivity areas
 - **Simplified access** to government schemes,weather and market data
-
----
-
-## 🚀 **Live Application** (Server permanently shut down to save credits.)
-
-<div align="center">
-
-### **[🌐 Try Project Kisan Now →](https://app-975609603775.us-central1.run.app/)**
-
-*No installation required - works on any device with a browser*
-
-</div>
-
-### **📱 Application Preview**
-
-
-
-
-https://github.com/user-attachments/assets/9c87ca7d-401c-4ba3-9361-96f4f140447f
-
-
-
-
-
 
 ---
 
@@ -89,15 +47,12 @@ https://github.com/user-attachments/assets/9c87ca7d-401c-4ba3-9361-96f4f140447f
 ### **🎬 Feature Showcase**
 
 #### 🌱 **Govt Scheme**
-<img width="953" height="536" alt="image" src="https://github.com/user-attachments/assets/89d43307-e62b-4e92-a5af-32ab33c28fed" />
 
 
 #### 🗣️ **Weather and Irrigation**
-<img width="955" height="564" alt="image" src="https://github.com/user-attachments/assets/8df0cc08-069e-4934-a4cb-4cfa857296fe" />
 
 
 #### 📊 **Market Intelligence**
-<img width="959" height="565" alt="image" src="https://github.com/user-attachments/assets/cb253cd8-3d1c-4a01-9c84-d74b74635355" />
 
 
 ---
@@ -122,7 +77,7 @@ https://github.com/user-attachments/assets/9c87ca7d-401c-4ba3-9361-96f4f140447f
 
 | Service | Environment Variable | Required | Get API Key | Purpose |
 |---------|---------------------|----------|-------------|---------|
-| 🤖 **Google AI** | `GOOGLE_API_KEY` | ✅ **Required** | [Get Key →](https://ai.google.dev/) | AI conversations & vision |
+| 🤖 **AWS Bedrock ** | `AWS_ACCESS_KEY_ID` | ✅ **Required**  | AI conversations & vision |
 | 🌤️ **Weather API** | `WEATHER_API_KEY` | ✅ **Required** | [Get Key →](https://openweathermap.org/api) | Weather forecasting |
 | 🎙️ **ElevenLabs** | `ELEVENLABS_API_KEY` | ⭐ **Recommended** | [Get Key →](https://elevenlabs.io) | Premium voice synthesis |
 | 📊 **Data.gov.in** | `MANDI_API_KEY` | ⚠️ *Optional* | [Get Key →](https://www.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi) | Government market data |
@@ -130,7 +85,9 @@ https://github.com/user-attachments/assets/9c87ca7d-401c-4ba3-9361-96f4f140447f
 ### **Environment Setup**
 ```bash
 # Create .env file
-GOOGLE_API_KEY=your_google_ai_api_key_here
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_kry
 WEATHER_API_KEY=your_openweathermap_api_key
 ELEVENLABS_API_KEY=your_elevenlabs_api_key_here  # For premium voice
 MANDI_API_KEY=your_data_gov_api_key  # Optional
@@ -148,8 +105,7 @@ MANDI_API_KEY=your_data_gov_api_key  # Optional
 ### **⚡ Quick Start**
 ```bash
 # Clone the repository
-git clone https://github.com/codeprofile/Project-Kisan.git
-cd Project-Kisan
+cd GramBrain
 
 # Install dependencies
 pip install -r requirements.txt
@@ -186,7 +142,7 @@ self.voice_settings = {
 ## 📁 **Project Structure**
 
 ```
-Project-Kisan/
+GramBrain-AI/
 ├── app/
 │   ├── google_adk_integration/
 │   │   ├── agents/              # AI agents for different domains
@@ -234,10 +190,6 @@ Project-Kisan/
 
 ## 🌾 **Built with ❤️ for Indian Farmers**
 
-[![GitHub stars](https://img.shields.io/github/stars/codeprofile/Project-Kisan?style=social)](https://github.com/codeprofile/Project-Kisan)
-[![GitHub forks](https://img.shields.io/github/forks/codeprofile/Project-Kisan?style=social)](https://github.com/codeprofile/Project-Kisan)
-
-**[⭐ Star this repository](https://github.com/codeprofile/Project-Kisan)** to support AI-powered agriculture!
 
 *Transforming farming through artificial intelligence*
 

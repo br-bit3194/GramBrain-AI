@@ -6,19 +6,19 @@ from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Web
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import desc
 
-from .google_adk_integration.farmbot_service import FarmBotService
-from .google_adk_integration.services.mandi_db_generation import CoreMarketDataSyncService
+from .aws_adk_integration.farmbot_service import FarmBotService
+from .aws_adk_integration.services.mandi_db_generation import CoreMarketDataSyncService
 from .websocket_conn import ConnectionManager
 from datetime import datetime, timedelta
 import json
 from fastapi.responses import HTMLResponse
-from .google_adk_integration.mandi_db.database import get_db_session,create_tables
-from .google_adk_integration.mandi_db.models import MarketPrice
+from .aws_adk_integration.mandi_db.database import get_db_session,create_tables
+from .aws_adk_integration.mandi_db.models import MarketPrice
 import uvicorn
 import os
 import base64
 
-app = FastAPI(title="Project Kisan",
+app = FastAPI(title="GramBrain AI ",
               description="AI-Powered Agricultural Assistant with Voice & Real Crop Health Diagnosis")
 
 # Mount static files and templates
@@ -309,7 +309,7 @@ async def enhanced_websocket_chat_endpoint(websocket: WebSocket):
 async def get_mandi_status():
     """Get Mandi data service status"""
     try:
-        from .google_adk_integration.services.mandi_data_loader import MandiDataLoader
+        from .aws_adk_integration.services.mandi_data_loader import MandiDataLoader
         loader = MandiDataLoader()
         status = loader.get_service_status()
         
@@ -330,7 +330,7 @@ async def get_mandi_status():
 async def load_mandi_data(days_back: int = 7):
     """Load market data from government API"""
     try:
-        from .google_adk_integration.services.mandi_data_loader import MandiDataLoader
+        from .aws_adk_integration.services.mandi_data_loader import MandiDataLoader
         loader = MandiDataLoader()
         result = await loader.load_market_data(days_back)
         
@@ -353,7 +353,7 @@ async def load_mandi_data(days_back: int = 7):
 async def get_commodity_data(commodity: str, days_back: int = 7):
     """Get prices for a specific commodity"""
     try:
-        from .google_adk_integration.services.mandi_data_loader import MandiDataLoader
+        from .aws_adk_integration.services.mandi_data_loader import MandiDataLoader
         loader = MandiDataLoader()
         result = await loader.get_commodity_prices(commodity, days_back)
         
@@ -370,7 +370,7 @@ async def get_commodity_data(commodity: str, days_back: int = 7):
 async def get_market_summary():
     """Get market data summary"""
     try:
-        from .google_adk_integration.services.mandi_data_loader import MandiDataLoader
+        from .aws_adk_integration.services.mandi_data_loader import MandiDataLoader
         loader = MandiDataLoader()
         result = await loader.get_market_summary()
         
@@ -387,7 +387,7 @@ async def get_market_summary():
 async def get_commodity_analysis(commodity: str, days_back: int = 7):
     """Get detailed analysis for a commodity"""
     try:
-        from .google_adk_integration.services.market_analysis_service import MarketAnalysisService
+        from .aws_adk_integration.services.market_analysis_service import MarketAnalysisService
         service = MarketAnalysisService()
         result = await service.get_commodity_prices(commodity, days_back)
         
@@ -404,7 +404,7 @@ async def get_commodity_analysis(commodity: str, days_back: int = 7):
 async def get_market_analysis(market: str, days_back: int = 7):
     """Get all commodity prices in a market"""
     try:
-        from .google_adk_integration.services.market_analysis_service import MarketAnalysisService
+        from .aws_adk_integration.services.market_analysis_service import MarketAnalysisService
         service = MarketAnalysisService()
         result = await service.get_market_prices(market, days_back)
         
@@ -425,7 +425,7 @@ async def compare_commodity_prices(
 ):
     """Compare prices across markets"""
     try:
-        from .google_adk_integration.services.market_analysis_service import MarketAnalysisService
+        from .aws_adk_integration.services.market_analysis_service import MarketAnalysisService
         service = MarketAnalysisService()
         result = await service.compare_prices(commodity, markets, days_back)
         
@@ -446,7 +446,7 @@ async def get_selling_advice(
 ):
     """Get selling advice for a commodity"""
     try:
-        from .google_adk_integration.services.market_analysis_service import MarketAnalysisService
+        from .aws_adk_integration.services.market_analysis_service import MarketAnalysisService
         service = MarketAnalysisService()
         result = await service.get_selling_advice(commodity, quantity, location)
         
