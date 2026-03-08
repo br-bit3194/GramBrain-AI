@@ -1,294 +1,411 @@
-# GramBrain AI - Multi-Agent Agricultural Intelligence Platform
+# GramBrain - AI Agricultural Assistant 🌾
 
-A next-generation, cloud-native, multi-agent AI platform designed to serve as "The AI Brain for Every Village in Bharat". GramBrain AI uses collaborative AI agents powered by Large Language Model (LLM) reasoning and Retrieval-Augmented Generation (RAG) to deliver real-time, explainable, and scalable agricultural intelligence.
+<div align="center">
 
-## Features
+[![AWS](https://img.shields.io/badge/AWS-Bedrock-orange?style=for-the-badge&logo=amazon-aws)](https://aws.amazon.com/bedrock/)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Modern-green?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+[![DynamoDB](https://img.shields.io/badge/DynamoDB-NoSQL-blue?style=for-the-badge&logo=amazon-dynamodb)](https://aws.amazon.com/dynamodb/)
 
-- **Multi-Agent Architecture**: 12 specialized AI agents collaborating through a master orchestrator
-- **LLM-Powered Reasoning**: AWS Bedrock integration with Claude, Titan, and Llama models
-- **RAG-Based Knowledge Retrieval**: Semantic search for contextual agricultural knowledge
-- **Explainable AI**: Transparent reasoning chains for every recommendation
-- **Farmer Intelligence**: Personalized crop advisory, weather-aware irrigation, pest detection
-- **Village Intelligence**: Aggregated insights for collective decision-making
-- **Sustainability Tracking**: Environmental impact metrics and eco-friendly recommendations
-- **Rural-to-Urban Marketplace**: Direct farmer-to-consumer connections with Pure Product Scores
+</div>
 
-## Architecture
+AI-powered agricultural assistant for Indian farmers, powered by AWS Bedrock and DynamoDB with Strands multi-agent framework.
 
+---
+
+## 🚀 Technology Stack
+
+### Core Components
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **🤖 LLM** | AWS Bedrock (Amazon Nova Lite) | Advanced AI conversations & vision |
+| **💾 Database** | AWS DynamoDB | Scalable NoSQL storage |
+| **🎯 Agent Framework** | Strands (Custom) | Multi-agent orchestration |
+| **🖼️ Vision** | Claude Vision (Bedrock) | Crop disease diagnosis |
+| **📊 Sessions** | DynamoDB | Distributed session management |
+
+### Key Features
+
+✅ **Scalability**: DynamoDB auto-scales with demand  
+✅ **Performance**: Amazon Nova lite for better responses  
+✅ **Reliability**: AWS managed services with 99.99% uptime  
+✅ **Cost-Effective**: Pay-per-use pricing model  
+✅ **Global**: Deploy in multiple AWS regions  
+
+---
+
+## 📋 Prerequisites
+
+### 1. AWS Account
+
+- Create AWS account at https://aws.amazon.com
+- Set up IAM user with Bedrock and DynamoDB permissions
+- Generate access keys
+
+### 2. Enable AWS Bedrock
+
+1. Go to AWS Bedrock console
+2. Request access to Claude models
+3. Wait for approval (usually instant)
+
+### 3. Required Permissions
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": "arn:aws:bedrock:*::foundation-model/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:*"
+      ],
+      "Resource": "arn:aws:dynamodb:*:*:table/farmbot_*"
+    }
+  ]
+}
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Presentation Layer                           │
-│  React Native Mobile App │ Next.js Web Dashboard │ Voice UI     │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                      API Gateway Layer                           │
-│  Amazon API Gateway │ WebSocket API │ REST API │ GraphQL        │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                Multi-Agent Intelligence Layer                    │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Orchestrator Agent (Master)                 │   │
-│  │  - Coordinates all agents                                │   │
-│  │  - Resolves conflicts using LLM                          │   │
-│  │  - Synthesizes final recommendations                     │   │
-│  └─────────────────────────┬───────────────────────────────┘   │
-│                             │                                    │
-│  Weather │ Soil │ Crop Advisory │ Pest │ Irrigation │ Yield    │
-│  Market │ Sustainability │ Marketplace │ Farmer Interaction    │
-│  Village Intelligence                                            │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                    LLM & RAG Layer                               │
-│  AWS Bedrock (Claude, Titan, Llama) │ Vector Database          │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│                      Data Layer                                  │
-│  RDS PostgreSQL │ DynamoDB │ Timestream │ S3 Data Lake         │
-└──────────────────────────────────────────────────────────────────┘
-```
 
-## Quick Start
+---
 
-### Prerequisites
+## 🛠️ Installation
 
-- Python 3.9+
-- AWS Account with Bedrock access
-- AWS CLI configured with credentials
+### 1. Clone Repository
 
-### Installation
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/grambrain/grambrain-ai.git
-cd grambrain-ai
+git clone https://github.com/codeprofile/Project-Kisan.git
+cd Project-Kisan
 ```
 
-2. Create virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+### 2. Install Dependencies
 
-3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Configure environment:
+### 3. Configure Environment
+
+Create `.env` file:
+
 ```bash
-cp .env.example .env
-# Edit .env with your AWS credentials and configuration
+# AWS Credentials
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_access_key_here
+AWS_SECRET_ACCESS_KEY=your_secret_key_here
+
+# AWS Bedrock
+BEDROCK_MODEL_ID=anthropic.claude-3-5-sonnet-20241022-v2:0
+BEDROCK_TEMPERATURE=0.7
+BEDROCK_MAX_TOKENS=4096
+
+# DynamoDB Tables
+DYNAMODB_MARKET_PRICES_TABLE=farmbot_market_prices
+DYNAMODB_SESSIONS_TABLE=farmbot_sessions
+DYNAMODB_ANALYTICS_TABLE=farmbot_analytics
+
+# External APIs
+WEATHER_API_KEY=your_openweathermap_api_key
+ELEVENLABS_API_KEY=your_elevenlabs_api_key_optional
+MANDI_API_KEY=your_data_gov_api_key_optional
 ```
 
-### Usage
+### 4. Initialize Database
+
+```bash
+# Tables will be created automatically on first run
+# Or create manually:
+python -c "from backend.app.integration.database.dynamodb_client import dynamodb_client; dynamodb_client.create_tables()"
+```
+
+---
+
+## 🚀 Running the Application
+
+### Development Mode
+
+```bash
+python -m uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Production Mode
+
+```bash
+gunicorn backend.app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+```
+
+### Docker
+
+```bash
+# Build the Docker image
+docker build -t grambrain-app .
+
+# Run the container
+docker run -p 8000:8000 grambrain-app
+
+# Run in detached mode (background)
+docker run -d -p 8000:8000 --name grambrain grambrain-app
+
+# View logs
+docker logs -f grambrain
+
+# Stop the container
+docker stop grambrain
+
+# Connect to running container
+docker exec -it grambrain bash
+```
+
+### Access Application
+
+Open browser: `http://localhost:8000`
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────┐
+│          FastAPI API (main.py)         │
+└─────────────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────┐
+│     GramBrain Service Layer (AWS)      │
+│   (grambrain_service_aws.py + tools)   │
+└─────────────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────┐
+│       Strands Multi-Agent Engine       │
+│   (Market / Weather / Crop / Scheme)   │
+└─────┬──────────┬──────────┬────────────┘
+      │          │          │
+      │          │          │
+      ▼          ▼          ▼
+┌────────────┐┌────────────┐┌───────────────┐
+│ AWS Bedrock││ AWS DynamoDB││ External APIs │
+│ (LLMs +    ││ (cache +    ││ (Mandi,       │
+│  vision)   ││  sessions)  ││  Weather,     │
+└────────────┘└────────────┘│  ElevenLabs)  │
+      │          │          └───────────────┘
+```
+
+
+---
+
+## ✨ Features
+
+### 1. 🌱 Crop Health Diagnosis
+- Upload crop images
+- AI-powered disease detection using Claude Vision
+- Treatment recommendations
+- Locally available medicines
+
+### 2. 🌤️ Weather Forecasting
+- Real-time weather data
+- 7-day forecasts
+- Irrigation recommendations
+- Farming operation timing
+
+### 3. 📊 Market Intelligence
+- Live mandi prices from DynamoDB
+- Price trend analysis
+- Selling recommendations
+- Best market identification
+
+### 4. 🏛️ Government Schemes
+- AI-powered scheme search
+- Eligibility checking
+- Application guidance
+- Document requirements
+
+---
+
+## 📊 DynamoDB Tables
+
+### Market Prices Table
+```
+PK: COMMODITY#{commodity}
+SK: DATE#{date}#MARKET#{market_id}
+Attributes: state, district, market, prices, trends
+```
+
+### Sessions Table
+```
+PK: SESSION#{session_id}
+SK: METADATA
+Attributes: user_id, state, created_at, ttl
+```
+
+### Analytics Table
+```
+PK: ANALYTICS#{commodity}
+SK: DATE#{date}
+Attributes: statistics, trends, predictions
+```
+
+---
+
+## 🧪 Testing
+
+### Test Bedrock Connection
 
 ```python
-import asyncio
-from src.system import GramBrainSystem
+from backend.app.integration.bedrock.bedrock_client import bedrock_client
 
-async def main():
-    # Initialize system
-    system = GramBrainSystem(aws_region="us-east-1")
-    await system.initialize()
-    
-    # Process a query
-    result = system.process_query(
-        query_text="Should I irrigate my wheat field today?",
-        user_id="farmer_001",
-        farm_id="farm_001",
-        farm_location={"lat": 28.5, "lon": 77.0},
-        farm_size_hectares=2.0,
-        crop_type="wheat",
-        growth_stage="tillering",
-        soil_type="loamy",
-    )
-    
-    print("Recommendation:", result["recommendation"])
-    print("Confidence:", result["confidence"])
-    
-    system.shutdown()
-
-asyncio.run(main())
+response = bedrock_client.invoke_model(
+    prompt="Hello, how are you?",
+    temperature=0.7
+)
+print(response)
 ```
 
-## Project Structure
-
-```
-grambrain-ai/
-├── src/
-│   ├── core/                 # Agent framework and orchestrator
-│   ├── agents/               # Specialized AI agents
-│   ├── llm/                  # LLM integration (AWS Bedrock)
-│   ├── rag/                  # RAG pipeline and knowledge retrieval
-│   ├── data/                 # Data models and database layer
-│   ├── api/                  # REST API endpoints
-│   └── utils/                # Utilities and helpers
-├── tests/                    # Unit and integration tests
-├── config/                   # Configuration files
-├── requirements.txt          # Python dependencies
-└── README.md                 # This file
-```
-
-## Agents
-
-### Implemented
-
-- **Weather Agent**: Analyzes weather forecasts and provides irrigation recommendations
-- **Soil Agent**: Analyzes soil health and recommends amendments
-
-### In Development
-
-- **Crop Advisory Agent**: Crop-specific guidance
-- **Pest & Disease Agent**: Pest detection and treatment
-- **Irrigation Optimization Agent**: Water usage optimization
-- **Yield Prediction Agent**: Harvest forecasting
-- **Market Intelligence Agent**: Price predictions and market insights
-- **Sustainability Agent**: Environmental impact tracking
-- **Marketplace Agent**: Product listings and Pure Product Scores
-- **Farmer Interaction Agent**: Multilingual voice interface
-- **Village Intelligence Agent**: Collective insights
-
-## Data Models
-
-### Core Entities
-
-- **User**: Farmer, village leader, policymaker, or consumer
-- **Farm**: Farm location, size, soil type, crops
-- **CropCycle**: Planting, growth, harvest data
-- **SoilHealthData**: NPK levels, pH, organic carbon
-- **WeatherData**: Temperature, rainfall, forecasts
-- **AgentOutput**: Standardized agent analysis and recommendations
-- **Recommendation**: Final synthesized recommendation with reasoning
-- **Product**: Marketplace product listings with Pure Product Scores
-
-## LLM Integration
-
-GramBrain uses AWS Bedrock for LLM inference:
-
-- **Claude 3 Sonnet**: Primary model for reasoning and synthesis
-- **Claude 3 Haiku**: Lightweight model for simple tasks
-- **Titan Text**: Alternative model for cost optimization
-- **Llama 2 70B**: Open-source alternative
-
-## RAG (Retrieval-Augmented Generation)
-
-Knowledge retrieval system for grounding LLM responses:
-
-- **Vector Database**: In-memory (dev), OpenSearch (production)
-- **Embeddings**: AWS Bedrock Titan Embeddings
-- **Knowledge Sources**: Research papers, best practices, case studies, government guidelines
-
-## Testing
-
-Run tests:
-```bash
-pytest tests/ -v
-```
-
-Run with coverage:
-```bash
-pytest tests/ --cov=src --cov-report=html
-```
-
-## Configuration
-
-### Environment Variables
-
-See `.env.example` for all available configuration options.
-
-### AWS Configuration
-
-Ensure your AWS credentials are configured:
-```bash
-aws configure
-```
-
-## Development
-
-### Adding a New Agent
-
-1. Create agent class in `src/agents/`:
-```python
-from src.core import Agent, AgentOutput, Query, UserContext
-
-class MyAgent(Agent):
-    def __init__(self):
-        super().__init__("my_agent")
-    
-    async def analyze(self, query: Query, context: UserContext) -> AgentOutput:
-        # Implementation
-        pass
-```
-
-2. Register in `src/system.py`:
-```python
-self.registry.register_agent_class("my_agent", MyAgent)
-```
-
-### Adding Knowledge to RAG
+### Test DynamoDB
 
 ```python
-await system.add_knowledge(
-    chunk_id="unique_id",
-    content="Knowledge content",
-    source="best_practice",
-    topic="irrigation",
-    crop_type="wheat",
-    region="north_india",
+from backend.app.integration.database.dynamodb_client import dynamodb_client
+
+# Create tables
+dynamodb_client.create_tables()
+
+# Test session
+success = dynamodb_client.create_session(
+    session_id="test",
+    user_id="user1",
+    initial_state={"test": True}
 )
 ```
 
-## Performance Targets
+---
 
-- **Recommendation Latency**: < 3 seconds for 95% of queries
-- **LLM Accuracy**: 85%+ for yield predictions within ±15%
-- **Market Price Forecast**: 75%+ directional accuracy for 7-day forecasts
-- **Pest Detection**: 90%+ accuracy from crop images
-- **System Availability**: 99.9% uptime
+## 💰 Cost Estimation
 
-## Correctness Properties
+### AWS Bedrock (Claude 3.5 Sonnet)
+- Input: ~$3 per 1M tokens
+- Output: ~$15 per 1M tokens
+- **Estimated**: $10-50/month for moderate usage
 
-The system implements 30 formal correctness properties covering:
+### DynamoDB (On-Demand)
+- Write: $1.25 per 1M requests
+- Read: $0.25 per 1M requests
+- **Estimated**: $5-20/month for moderate usage
 
-- Multi-agent coordination and communication
-- LLM integration and fallback mechanisms
-- RAG knowledge retrieval and attribution
-- Recommendation explainability
-- Data integrity and privacy
-- Marketplace features and traceability
+### Total Estimated Cost
+**$15-70/month** for moderate usage (1000-5000 queries/day)
 
-See `design.md` for complete property specifications.
+---
 
-## Contributing
+## 🔧 Configuration
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+### Bedrock Models
 
-## License
+Available models:
+- `anthropic.claude-3-5-sonnet-20241022-v2:0` (Recommended)
+- `anthropic.claude-3-haiku-20240307-v1:0` (Faster, cheaper)
+- `anthropic.claude-3-opus-20240229-v1:0` (Most capable)
 
-MIT License - see LICENSE file for details
+### DynamoDB Settings
 
-## Support
+```python
+# On-Demand (default)
+BillingMode='PAY_PER_REQUEST'
 
-For issues, questions, or suggestions:
-- GitHub Issues: https://github.com/grambrain/grambrain-ai/issues
-- Email: support@grambrain.ai
+# Provisioned (for consistent traffic)
+BillingMode='PROVISIONED'
+ReadCapacityUnits=5
+WriteCapacityUnits=5
+```
 
-## Roadmap
+---
 
-- Phase 1: Core multi-agent framework (current)
-- Phase 2: Mobile app and voice interface
-- Phase 3: Marketplace and consumer features
-- Phase 4: Advanced analytics and policymaker dashboard
-- Phase 5: IoT sensor integration and real-time data pipelines
+## 📈 Monitoring
 
-## Acknowledgments
+### CloudWatch Metrics
 
-Built with support from agricultural experts, farmers, and the rural development community.
+Monitor:
+- Bedrock invocation count
+- DynamoDB read/write units
+- API latency
+- Error rates
+
+### Logging
+
+```python
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+```
+
+---
+
+## 🚀 Deployment
+
+### AWS Elastic Beanstalk
+
+```bash
+# Install EB CLI
+pip install awsebcli
+
+# Initialize
+eb init -p python-3.8 project-kisan
+
+# Create environment
+eb create project-kisan-env
+
+# Deploy
+eb deploy
+```
+
+### AWS ECS/Fargate
+
+```bash
+# Build Docker image
+docker build -t project-kisan-aws .
+
+# Push to ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+docker tag project-kisan-aws:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/project-kisan-aws:latest
+docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/project-kisan-aws:latest
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
+
+---
+
+## 🙏 Acknowledgments
+
+- AWS Bedrock team for Claude models
+- AWS DynamoDB team for scalable database
+- OpenWeatherMap for weather data
+- Data.gov.in for market data
+
+---
+
+<div align="center">
+
+**Built with ❤️ for Indian Farmers**
+
+[⭐ Star this repository](https://github.com/codeprofile/Project-Kisan) to support AI-powered agriculture!
+
+</div>
